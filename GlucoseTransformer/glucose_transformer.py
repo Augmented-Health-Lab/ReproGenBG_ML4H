@@ -46,6 +46,7 @@ class PositionalEncoding(nn.Module):
         return x + self.encoding[:, :x.size(1), :].to(x.device)
     
 class TransformerEncoderLayer(nn.Module):
+    # !!! This class is not used in the final model !!!
     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1):
         super(TransformerEncoderLayer, self).__init__()
         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
@@ -70,6 +71,7 @@ class TransformerEncoderLayer(nn.Module):
         return src
     
 class TransformerEncoder(nn.Module):
+    # !!! This class is the final model !!!
     def __init__(self, num_layers, d_model, nhead, input_dim=1, dim_feedforward=256, dropout=0.1):
         super(TransformerEncoder, self).__init__()
         self.d_model = d_model
