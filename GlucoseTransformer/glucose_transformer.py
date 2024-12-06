@@ -68,7 +68,94 @@ class PositionalEncoding(nn.Module):
 #         src = src + self.dropout2(src2)
 #         src = self.norm2(src)
 #         return src
-    
+
+class TransformerEncoder_version2(nn.Module):
+    def __init__(self, past_seq_len, num_layers, d_model, nhead, input_dim=1, dropout=0.1):
+        super(TransformerEncoder_version2, self).__init__()
+        self.d_model = d_model
+        self.past_seq_len = past_seq_len
+        
+        # Positional Encoding (green block in the figure)
+        self.pos_encoder = PositionalEncoding(d_model)
+        
+        # Initial projection of input data
+        self.input_projection = nn.Sequential(
+            nn.Linear(input_dim, d_model),
+            nn.LayerNorm(d_model)
+        )
+        
+        # Stack of Encoder Layers
+        self.encoder_layers = nn.ModuleList([])
+        for _ in range(num_layers):
+            # Each encoder layer contains:
+            layer = nn.ModuleDict({
+                # 1. Multi-Head Attention block (yellow in figure)
+                'attention': nn.MultiheadAttention(
+                    embed_dim=d_model,
+                    num_heads=nhead,
+                    dropout=dropout,
+                    batch_first=True
+                ),
+                # 2. Add & Norm after attention (yellow in figure)
+                'norm1': nn.LayerNorm(d_model),
+                
+                # 3. Feed Forward block (blue in figure)
+                'feed_forward': nn.Sequential(
+                    nn.Linear(d_model, d_model),
+                    nn.ReLU(),
+                    # nn.Dropout(dropout),
+                    # nn.Linear(d_model, d_model)
+                ),
+                # 4. Add & Norm after feed forward (yellow in figure)
+                'norm2': nn.LayerNorm(d_model)
+            })
+            self.encoder_layers.append(layer)
+
+        # # Fully Connected output layer (orange in figure)
+        # self.output_layer = nn.Sequential(
+        #     nn.Linear(d_model, past_seq_len),
+        #     nn.ReLU(),
+        #     nn.Dropout(dropout),
+        #     nn.Linear(past_seq_len, 1)
+        # )
+        
+        # 5. two linear layers with dimension reduction, matching the layer names in figure 6
+        self.linear2 = nn.Linear(d_model, 1)
+        self.linear3 = nn.Linear(past_seq_len, 1)
+        
+    def forward(self, src):
+        # src shape: [batch_size, seq_len, input_dim]
+        
+        # Initial projection and positional encoding
+        x = self.input_projection(src)
+        x = self.pos_encoder(x)
+        
+        # Process through encoder layers
+        for layer in self.encoder_layers:
+            # Multi-Head Attention
+            attn_output, _ = layer['attention'](x, x, x)
+            # Add & Norm (first residual connection)
+            x = layer['norm1'](x + attn_output)
+            # Feed Forward
+            ff_output = layer['feed_forward'](x)
+            # Add & Norm (second residual connection)
+            x = layer['norm2'](x + ff_output)
+        
+        # print('x2: ', x.shape)
+        # Global average pooling over sequence length
+        # x = x.mean(dim=2)
+
+        # print('x3: ', x.shape)
+        x = self.linear2(x)
+        x = x.squeeze(-1)
+        output = self.linear3(x)
+        # print('output2: ', output.shape)
+        # print('output: ', output)   
+        return output
+
+
+
+
 class TransformerEncoder(nn.Module):
     def __init__(self, num_layers, d_model, nhead, input_dim=1, dim_feedforward=256, dropout=0.1):
         super(TransformerEncoder, self).__init__()

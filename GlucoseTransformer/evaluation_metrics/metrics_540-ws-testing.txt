@@ -1,4 +1,0 @@
-Test File: ./OhioT1DM 2020/2020/test/540-ws-testing.xml
-RMSE: 23.80
-MAE: 17.64
-MAPE: 11.91%
