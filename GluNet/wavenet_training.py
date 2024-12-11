@@ -6,7 +6,7 @@ from datetime import datetime
 import torch.nn.functional as F
 from torch.autograd import Variable
 from model_logging import Logger
-from wavenet_modules import *
+from wavenet_tensorflow import *
 
 
 def print_last_loss(opt):
