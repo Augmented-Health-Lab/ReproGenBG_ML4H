@@ -2,3 +2,7 @@
 .venv/
 *.csv
 *.xml
+*.pkl
+*.pth
+StackedLSTM_again/*
+StackedLSTM_again/processed_data/559_test_combined_segments_noshrink_ONLYCGM.pkl

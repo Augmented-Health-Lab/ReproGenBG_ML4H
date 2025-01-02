@@ -17,7 +17,6 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-from sklearn.metrics import root_mean_squared_error
 import pickle
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -25,24 +24,16 @@ def round_up_to_nearest_five_minutes(ts):
     # Parse the timestamp
     dt = datetime.strptime(ts, "%d-%m-%Y %H:%M:%S")
     
-    # Calculate minutes to add to round up to the nearest 5 minutes
     minutes_to_add = (5 - dt.minute % 5) % 5
     if minutes_to_add == 0 and dt.second == 0:
-        # If exactly on a 5 minute mark and second is 0, no need to add time
         minutes_to_add = 0
     
-    # Add the necessary minutes
     new_dt = dt + timedelta(minutes=minutes_to_add)
-    
-    # Return the new timestamp in the same format
     return new_dt.strftime( "%d-%m-%Y %H:%M:%S")
 
-# Need to set the 
 def read_ohio(filepath, category, round):
     tree = ET.parse(filepath)
     root = tree.getroot()
-    # interval_timedelta = datetime.timedelta(minutes=interval_timedelta)
-
     res = []
     for item in root.findall(category):
         entry0 = item[0].attrib
@@ -53,17 +44,7 @@ def read_ohio(filepath, category, round):
         entry0['ts'] = datetime.strptime(ts, "%d-%m-%Y %H:%M:%S")
         res.append([entry0])
         for i in range(1, len(item)):
-            # last_entry = item[i - 1].attrib
             entry = item[i].attrib
-            # t1 = datetime.datetime.strptime(entry["ts"], "%d-%m-%Y %H:%M:%S")
-            # t0 = datetime.datetime.strptime(last_entry["ts"], "%d-%m-%Y %H:%M:%S")
-            # delt = t1 - t0
-            # if category == "glucose_level":
-            #     if delt <= interval_timedelta:
-            #         res[-1].append([entry])
-            #     else:
-            #         res.append([entry])
-            # else:
             ts = entry['ts']
             if round == True:
                 adjusted_ts = round_up_to_nearest_five_minutes(ts)
@@ -75,25 +56,18 @@ def read_ohio(filepath, category, round):
 
 def transfer_into_table(glucose):
     glucose_dict = {entry[0]['ts']: entry[0]['value'] for entry in glucose}
-
-    # Create the multi-channel database
     g_data = []
     for timestamp in glucose_dict:
         record = {
             'timestamp': timestamp,
             'glucose_value': glucose_dict[timestamp],
-            # 'meal_type': None,
-            # 'meal_carbs': 0
         }
         
         g_data.append(record)
 
-    # Create DataFrame
     glucose_df = pd.DataFrame(g_data)
-
-    # Convert glucose values to numeric type for analysis
     glucose_df['glucose_value'] = pd.to_numeric(glucose_df['glucose_value'])
-    glucose_df['glucose_value'] = glucose_df['glucose_value'] # Shrink to its 1/100 for scaling
+    glucose_df['glucose_value'] = glucose_df['glucose_value'] 
 
     return glucose_df
 
@@ -118,7 +92,7 @@ def segement_data_as_15min(data):
     for i, start in enumerate(segment_starts, 1):
         segments[f'segment_{i}'] = df.iloc[prev_index:start].reset_index(drop=True)
         prev_index = start
-
+    
     # Add the last segment from the last gap to the end of the DataFrame
     segments[f'segment_{len(segment_starts) + 1}'] = df.iloc[prev_index:].reset_index(drop=True)
 
@@ -141,7 +115,7 @@ def update_segments_with_meals(segments, meal_df):
     for segment_name, segment_df in segments.items():
         # Initialize the 'carbs' column to zeros
         segment_df['carb_effect'] = 0
-
+        
         for index, meal_row in meal_df.iterrows():
             meal_time = meal_row['ts']
             closest_glucose_idx = find_closest_glucose_index(segment_df, meal_time)
@@ -150,9 +124,7 @@ def update_segments_with_meals(segments, meal_df):
                 segment_df.loc[closest_glucose_idx, 'carb_effect'] = int(meal_row['carb_effect'])
                 meal_df.loc[index, 'assigned'] = True
 
-
     return segments
-
 
 def expand_meal_entry(meal_row):
     meal_time = meal_row['ts']
@@ -178,7 +150,6 @@ def expand_meal_entry(meal_row):
     timestamp_list = pd.date_range(start=meal_time, end=end_effect_time, freq='5min')
     d = {"ts": timestamp_list[:-1], "carb_effect": c_eff_list}
     meal_effect_df = pd.DataFrame(data = d)
-
     return meal_effect_df
 
     
