@@ -19,13 +19,11 @@ from sklearn.metrics import mean_squared_error
 
 import glob
 import os
-
+import sys
 import pickle
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-print(device)
-
-
-
+print(device, flush = True)
+ph = 6
 def preprocess_t1dexi_cgm(path, round):
 
     subject = pd.read_csv(path)
@@ -113,7 +111,7 @@ def prepare_dataset(segments, ph, history_len):
             features_list.append(features)
             # labels_list.append(label)
             
-    print("len of features_list " + str(len(features_list)))
+    print("len of features_list " + str(len(features_list)), flush = True)
 
     return features_list, raw_glu_list
 
@@ -256,7 +254,7 @@ for segment in test_segment_list:
     for key, value in segment.items():
         test_merged_segments[key] = value
 
-# %%features_list, raw_glu_list = prepare_dataset(merged_segments, ph, 6)
+features_list, raw_glu_list = prepare_dataset(merged_segments, ph, 6)
 # Assuming features_list and raw_glu_list are already defined
 features_array = np.array(features_list)
 labels_array = np.array(raw_glu_list)
