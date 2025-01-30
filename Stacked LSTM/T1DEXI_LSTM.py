@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 
 from datetime import datetime, timedelta
-from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
 
 import torch
@@ -234,12 +233,12 @@ for j in glob.glob('../T1DEXI_processed/*.csv'):
     file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
     # Exclude files within the range 0 to 248
     if bot_range <= file_number <= top_range:
-        print("Processing test file ", filename)
+        print("Processing test file ", filename, flush=True)
         test_segments = get_gdata(j)
         test_segment_list.append(test_segments)
         continue
     else: 
-        print("Processing train file ", filename)
+        print("Processing train file ", filename, flush=True)
         segments = get_gdata(j)
         segment_list.append(segments)
     count += 1
@@ -322,7 +321,7 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
     
-    print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {loss.item():.4f}')
+    print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {loss.item():.4f}', flush=True)
 
 
     model.eval()
