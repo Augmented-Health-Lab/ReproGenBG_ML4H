@@ -21,6 +21,7 @@ import glob
 import os
 import sys
 import pickle
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(device, flush = True)
 ph = 6
