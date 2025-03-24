@@ -77,8 +77,23 @@ def read_ohio(filepath, category, round):
     # interval_timedelta = datetime.timedelta(minutes=interval_timedelta)
 
     res = []
+    # if no entry in the category
+   
+    print("category is ", category, flush = True)
+    print("length of root.findall(category) is ", len(root.findall(category)), flush = True)
+    # if len(root.findall(category)) == 1:
+    #     return res
     for item in root.findall(category):
-        entry0 = item[0].attrib
+        # check if the item has no children
+        if len(item) == 0:
+            # set the first entry to be the only entry
+            entry0 = item.attrib
+        else:
+            if len(item) > 0:
+                entry0 = item[0].attrib
+            else:
+                print("item has no children")
+                continue
         if round == True:
             adjusted_ts = round_up_to_nearest_five_minutes(entry0['ts'])
             entry0['ts'] = adjusted_ts
@@ -354,9 +369,9 @@ def prepare_dataset(segments):
     # Iterate over each segment
     for segment_name, segment_df in segments.items():
         # Ensure all columns are of numeric type
-        segment_df['carbs'] = pd.to_numeric(segment_df['carbs'], errors='coerce')
-        segment_df['basal_rate'] = pd.to_numeric(segment_df['basal_rate'], errors='coerce')
-        segment_df['bolus_dose'] = pd.to_numeric(segment_df['bolus_dose'], errors='coerce')
+        # segment_df['carbs'] = pd.to_numeric(segment_df['carbs'], errors='coerce')
+        # segment_df['basal_rate'] = pd.to_numeric(segment_df['basal_rate'], errors='coerce')
+        # segment_df['bolus_dose'] = pd.to_numeric(segment_df['bolus_dose'], errors='coerce')
 
         # Fill NaNs that might have been introduced by conversion errors
         segment_df.fillna(0, inplace=True)
@@ -367,7 +382,7 @@ def prepare_dataset(segments):
         # Iterate through the data to create feature-label pairs
         for i in range(max_index + 1):
             # Extracting features from index i to i+15
-            features = segment_df.loc[i:i+15, ['glucose_value', 'carbs', 'basal_rate', 'bolus_dose']].values.flatten()
+            features = segment_df.loc[i:i+15, ['glucose_value']].values.flatten()
             # Extracting label for index i+21
             # Do the label transform
             label = segment_df.loc[i+21, 'glucose_value'] - segment_df.loc[i+15, 'glucose_value']

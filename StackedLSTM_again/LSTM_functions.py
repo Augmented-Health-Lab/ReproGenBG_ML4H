@@ -72,14 +72,14 @@ def transfer_into_table(glucose):
     return glucose_df
 
 
-def segement_data_as_15min(data):
+def segement_data_as_6_min(data):
     df = pd.DataFrame(data)
 
     # Calculate time differences
     df['time_diff'] = df['timestamp'].diff()
 
     # Identify large gaps
-    df['new_segment'] = df['time_diff'] > pd.Timedelta(minutes=15)
+    df['new_segment'] = df['time_diff'] > pd.Timedelta(minutes=6)
 
     # Find indices where new segments start
     segment_starts = df[df['new_segment']].index
