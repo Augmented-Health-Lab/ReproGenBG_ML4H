@@ -294,7 +294,7 @@ else:
 segment_list = []
 
 # For each diatrend subject, process the data and segment it
-for j in glob.glob('../../../../data/Diatrend/diatrend_subset/*.csv'):
+for j in glob.glob('../../../data/Diatrend/diatrend_subset/*.csv'):
     filename = os.path.basename(j)
     file_number = int(filename.split('Subject')[-1].split('.')[0])  
     
