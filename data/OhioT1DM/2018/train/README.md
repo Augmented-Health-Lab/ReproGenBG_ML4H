@@ -1,0 +1,1 @@
+This folder contains the train for both 2018 and 2020. This folder was given as the directory for the training data for all models. 
