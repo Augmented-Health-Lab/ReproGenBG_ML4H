@@ -58,7 +58,7 @@ def load_data(cfg):
 def load_glucose_data(csv_path, nb_past_steps, nb_future_steps):
     df_glucose_level = load_T1DEXI_series(csv_path)
     dt = df_glucose_level.index.to_series().diff().dropna()
-    idx_breaks = np.argwhere(dt!=pd.Timedelta(5, 'm'))
+    idx_breaks = np.argwhere(dt>pd.Timedelta(6, 'm'))
 
     # It would be possible to load more features here
     nd_glucose_level = df_glucose_level.values

@@ -20,7 +20,7 @@ class DataReader(object):
         filepath: string, path of file
         sampling_interval: float, int or datetime.timedelta, in minutes
         """
-        if fmt not in ["direcnet", "VA", "VA1", "VA2", "direcnet_pid", "ohio"]:
+        if fmt not in ["direcnet", "VA", "VA1", "VA2", "direcnet_pid", "ohio", "diatrend"]:
             raise ValueError("Wrong data format")
         self.fmt = fmt
         self.filepath = filepath
@@ -45,8 +45,8 @@ class DataReader(object):
             return self.read_VA_patient2()
         elif self.fmt == "direcnet_pid":
             return self.read_direcnet_pid()
-        elif self.fmt == "ohio":
-            return self.read_ohio()
+        elif self.fmt == "diatrend":
+            return self.read_diatrend()
 
     def read_direcnet(self):
         """
@@ -223,7 +223,7 @@ class DataReader(object):
     #             else:
     #                 res.append([float(entry["value"])])
     #     return res
-    def read_ohio(self):
+    def read_diatrend(self):
         '''
         Temperarily use read_ohio to represent the function to process diatrend dataset to avoid formatting issue
         '''

@@ -150,7 +150,7 @@ class CGMSDataSeg(CGMSData):
             self.train_weights[-1] = target_weight
         self.train_n = self.train_x.shape[0]
         self.train_idx = np.random.permutation(self.train_n)
-        self.gan_data = np.loadtxt("../time-gan/results/gen_hypo.txt")
+        # self.gan_data = np.loadtxt("../time-gan/results/gen_hypo.txt")
 
     def undersampling(self, ratio, padding):
         if padding == "Same":
