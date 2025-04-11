@@ -1,4 +1,4 @@
 Test File: 152
-RMSE: 24.11
-MAE: 16.99
-MAPE: 13.62%
+RMSE: 24.31
+MAE: 17.26
+MAPE: 14.03%

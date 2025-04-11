@@ -1,4 +1,4 @@
 Test File: 103
-RMSE: 12.30
-MAE: 8.87
-MAPE: 7.71%
+RMSE: 12.49
+MAE: 9.01
+MAPE: 7.88%

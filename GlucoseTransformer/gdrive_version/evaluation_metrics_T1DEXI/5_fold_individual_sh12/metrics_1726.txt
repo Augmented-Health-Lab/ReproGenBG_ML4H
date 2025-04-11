@@ -1,4 +1,4 @@
 Test File: 1726
-RMSE: 18.30
-MAE: 13.53
-MAPE: 8.44%
+RMSE: 16.42
+MAE: 11.52
+MAPE: 7.48%

@@ -1,4 +1,4 @@
 Test File: 114
-RMSE: 19.18
-MAE: 14.19
-MAPE: 10.28%
+RMSE: 19.11
+MAE: 14.21
+MAPE: 10.39%

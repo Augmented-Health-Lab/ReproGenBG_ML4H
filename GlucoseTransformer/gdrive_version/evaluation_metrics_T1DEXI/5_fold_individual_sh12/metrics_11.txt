@@ -1,4 +1,4 @@
 Test File: 11
-RMSE: 17.64
-MAE: 13.42
-MAPE: 14.54%
+RMSE: 18.22
+MAE: 13.87
+MAPE: 15.12%
