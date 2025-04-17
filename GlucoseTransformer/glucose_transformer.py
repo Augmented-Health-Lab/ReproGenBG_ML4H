@@ -742,3 +742,26 @@ def load_model(test_file_path, model_class=TransformerEncoder, save_dir='saved_m
     
     print(f"Model loaded from {model_path}")
     return model
+
+def load_model_population(test_file_path, past_sequence_length, model_class=TransformerEncoder_version2, save_dir='saved_models'):
+    # Extract the base filename from the test file path
+    test_file_name = os.path.splitext(os.path.basename(test_file_path))[0]
+    model_path = os.path.join(save_dir, f'model_{test_file_name}.pth')
+
+    model = TransformerEncoder_version2(
+        past_seq_len=past_sequence_length,
+        num_layers=1,
+        d_model=512,
+        nhead=4,
+        input_dim=1,
+        dropout=0.2
+    )
+
+    # Load the saved weights
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model = model.to(device)
+    model.eval()
+
+    print(f"Model loaded from {model_path}")
+    return model
