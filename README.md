@@ -76,6 +76,8 @@ python ./MartinssonAndvanDoorn/diatrend_main.py
 python ./MartinssonAndvanDoorn/t1dexi_main.py
 ```
 
+#### 2.1 Li et al., 2021
+
 
 #### 2.3 van Doorn et al., 2021
 ##### OhioT1DM:
@@ -114,3 +116,24 @@ python ./AccurateBG/accurate_bg/diatrend_main.py
 python ../AccurateBG/accurate_bg/t1dexi_main.py
 ```
 
+#### 2.5 Rabby et al., 2021
+
+
+
+#### 2.6 Lee et al., 2021
+##### OhioT1DM:
+
+```bash
+python ./GlucoseTransformer_organized/ohio_main.py
+```
+##### DiaTrend:
+
+```bash
+python ./GlucoseTransformer_organized/diatrend_main.py
+```
+
+##### T1DEXI:
+
+```bash
+python ../GlucoseTransformer_organized/t1dexi_main.py
+```
