@@ -20,7 +20,7 @@ class DataReader(object):
         filepath: string, path of file
         sampling_interval: float, int or datetime.timedelta, in minutes
         """
-        if fmt not in ["direcnet", "VA", "VA1", "VA2", "direcnet_pid", "ohio"]:
+        if fmt not in ["direcnet", "VA", "VA1", "VA2", "direcnet_pid", "ohio", "t1dexi"]:
             raise ValueError("Wrong data format")
         self.fmt = fmt
         self.filepath = filepath
@@ -45,8 +45,8 @@ class DataReader(object):
             return self.read_VA_patient2()
         elif self.fmt == "direcnet_pid":
             return self.read_direcnet_pid()
-        elif self.fmt == "ohio":
-            return self.read_ohio()
+        elif self.fmt == "t1dexi":
+            return self.read_t1dexi()
 
     def read_direcnet(self):
         """
@@ -223,11 +223,8 @@ class DataReader(object):
     #             else:
     #                 res.append([float(entry["value"])])
     #     return res
-    def read_ohio(self):
-        '''
-        Temperarily use read_ohio to represent the function to process diatrend dataset to avoid formatting issue
-        '''
-
+    def read_t1dexi(self):
+  
         subject = pd.read_csv(self.filepath)
         subject['LBDTC'] = pd.to_datetime(subject['LBDTC'], errors='coerce')  # Convert 'date' column to datetime if not already
         print(subject['LBDTC'][0])

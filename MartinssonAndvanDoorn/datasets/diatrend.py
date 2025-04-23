@@ -37,55 +37,68 @@ def load_dataset(cfg):
         cfg['csv_path'] = 'all'
         return x_train, y_train, x_valid, y_valid, x_test, y_test
     else:
-        print(cfg['csv_path'])
-        x_train, y_train, x_valid, y_valid, x_test, y_test = load_data(cfg)
+        
+        result = load_data(cfg)
+        if result is None:
+            print("No valid data found for the given csv_path. Skipping dataset loading...")
+            return None
+        x_train, y_train, x_valid, y_valid, x_test, y_test = result
         return x_train, y_train, x_valid, y_valid, x_test, y_test
 
 def load_data(cfg):
-    csv_path        = cfg['csv_path']
-    nb_past_steps   = int(cfg['nb_past_steps'])
-    nb_future_steps = int(cfg['nb_future_steps'])
-    train_fraction  = float(cfg['train_fraction'])
-    valid_fraction  = float(cfg['valid_fraction'])
-    test_fraction   = float(cfg['test_fraction'])
-    print("nb_future_steps ", nb_future_steps)
+    try:
+        csv_path        = cfg['csv_path']
+        nb_past_steps   = int(cfg['nb_past_steps'])
+        nb_future_steps = int(cfg['nb_future_steps'])
+        train_fraction  = float(cfg['train_fraction'])
+        valid_fraction  = float(cfg['valid_fraction'])
+        test_fraction   = float(cfg['test_fraction'])
+        
 
-    result = load_glucose_data(csv_path, nb_past_steps, nb_future_steps)
-    
-    if result is None:
-        print("No valid data returned from load_glucose_data. Skipping...")
+        result = load_glucose_data(csv_path, nb_past_steps, nb_future_steps)
+        
+        if result is None:
+            print("No valid data returned from load_glucose_data. Skipping...")
+            return None
+
+        xs, ys = result
+        ys = np.expand_dims(ys, axis=1)
+
+        x_train, x_valid, x_test = utils.split_data(xs, train_fraction,
+                valid_fraction, test_fraction)
+        y_train, y_valid, y_test = utils.split_data(ys, train_fraction,
+                valid_fraction, test_fraction)
+
+        # scale data
+        scale = float(cfg['scale'])
+        x_train *= scale
+        y_train *= scale
+        x_valid *= scale
+        y_valid *= scale
+        x_test  *= scale
+        y_test  *= scale
+
+        return x_train, y_train, x_valid, y_valid, x_test, y_test
+    except Exception as e:
+        print(f"Error loading data: {e}")
         return None
-
-    xs, ys = result
-    ys = np.expand_dims(ys, axis=1)
-
-    x_train, x_valid, x_test = utils.split_data(xs, train_fraction,
-            valid_fraction, test_fraction)
-    y_train, y_valid, y_test = utils.split_data(ys, train_fraction,
-            valid_fraction, test_fraction)
-
-    # scale data
-    scale = float(cfg['scale'])
-    x_train *= scale
-    y_train *= scale
-    x_valid *= scale
-    y_valid *= scale
-    x_test  *= scale
-    y_test  *= scale
-
-    return x_train, y_train, x_valid, y_valid, x_test, y_test
 
 def load_glucose_data(csv_path, nb_past_steps, nb_future_steps):
     df_glucose_level = load_diatrend_series(csv_path)
     dt = df_glucose_level.index.to_series().diff().dropna()
-    idx_breaks = np.argwhere(dt!=pd.Timedelta(5, 'm'))
+    idx_breaks = np.argwhere(dt>pd.Timedelta(6, 'm'))
 
     # It would be possible to load more features here
     nd_glucose_level = df_glucose_level.values
     consecutive_segments = np.split(nd_glucose_level, idx_breaks.flatten())
 
+    # # print(f"Total segments found: {len(consecutive_segments)}")
+    # segment_lengths = [len(c) for c in consecutive_segments]
+    # # print(f"Segment lengths: {segment_lengths}")
+    
     consecutive_segments = [c for c in consecutive_segments if len(c) >=
             nb_past_steps+nb_future_steps]
+    # print(f"Segments after filtering: {len(consecutive_segments)}")
 
     sups = [utils.sequence_to_supervised(c, nb_past_steps, nb_future_steps) for
             c in consecutive_segments]
