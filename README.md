@@ -56,7 +56,7 @@ After accessing these three datasets, please follow these instructions for data 
 Each dataset has a dedicated main script to train and evaluate all six methods. And the parameters are all based on the version provided by the original studies. 
 
 #### 2.1 Martinsson et al., 2019
-Before you run the command, please ensure to change the dasta path in config yaml file 
+Before you run the command, please ensure to change the data path in config yaml file 
 ##### OhioT1DM:
 
 ```bash

@@ -7,3 +7,5 @@ __pycache__/
 random_search_configs/
 *.yaml
 *.png
+!original_ohio_experiments/
+!original_ohio_experiments/*.yaml
