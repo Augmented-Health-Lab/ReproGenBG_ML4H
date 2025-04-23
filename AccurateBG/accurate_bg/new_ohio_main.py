@@ -3,8 +3,7 @@ import json
 import numpy as np
 from data_reader import DataReader  # Assuming DataReader is defined in data_reader.py
 from cgms_data_seg import CGMSDataSeg  # Assuming CGMSDataSeg is defined in cgms_data_seg.py
-from regressor import regressor, regressor_transfer  # Assuming these are defined in regressor.py
-from test_ckpt import test_ckpt  # Assuming test_ckpt is defined in test_ckpt.py
+from cnn_ohio import regressor, regressor_transfer, test_ckpt
 
 
 def main():

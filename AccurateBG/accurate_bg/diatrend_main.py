@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 from cgms_data_seg import CGMSDataSeg  # Assuming CGMSDataSeg is defined in cgms_data_seg.py
-from regressor import regressor  # Assuming regressor is defined in regressor.py
-from test_ckpt import test_ckpt  # Assuming test_ckpt is defined in test_ckpt.py
+from cnn_ohio import regressor, regressor_transfer, test_ckpt
 
 
 def preprocess_DiaTrend(path):
