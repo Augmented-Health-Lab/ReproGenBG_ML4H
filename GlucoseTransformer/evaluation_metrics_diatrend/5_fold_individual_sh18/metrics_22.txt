@@ -1,0 +1,4 @@
+Test File: 22
+RMSE: 20.04
+MAE: 13.92
+MAPE: 8.34%

@@ -1,0 +1,4 @@
+Test File: /content/drive/Shareddrives/Yanjun/ReproGenBG/ReproGenBG_ML4H/GlucoseTransformer/./OhioT1DM 2020/2018/test/570-ws-testing.xml
+RMSE: 16.98
+MAE: 12.11
+MAPE: 6.01%

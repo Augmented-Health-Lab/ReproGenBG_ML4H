@@ -45,31 +45,117 @@ class PositionalEncoding(nn.Module):
         # print(self.encoding[:, :x.size(1), :].shape)
         return x + self.encoding[:, :x.size(1), :].to(x.device)
     
-class TransformerEncoderLayer(nn.Module):
-    # !!! This class is not used in the final model !!!
-    def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1):
-        super(TransformerEncoderLayer, self).__init__()
-        self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
-        self.linear1 = nn.Linear(d_model, dim_feedforward)
-        self.dropout = nn.Dropout(dropout)
-        self.linear2 = nn.Linear(dim_feedforward, d_model)
+# class TransformerEncoderLayer(nn.Module):
+#     def __init__(self, d_model, nhead, dim_feedforward=2048, dropout=0.1):
+#         super(TransformerEncoderLayer, self).__init__()
+#         self.self_attn = nn.MultiheadAttention(d_model, nhead, dropout=dropout)
+#         self.linear1 = nn.Linear(d_model, dim_feedforward)
+#         self.dropout = nn.Dropout(dropout)
+#         self.linear2 = nn.Linear(dim_feedforward, d_model)
         
-        self.norm1 = nn.LayerNorm(d_model)
-        self.norm2 = nn.LayerNorm(d_model)
-        self.dropout1 = nn.Dropout(dropout)
-        self.dropout2 = nn.Dropout(dropout)
+#         self.norm1 = nn.LayerNorm(d_model)
+#         self.norm2 = nn.LayerNorm(d_model)
+#         self.dropout1 = nn.Dropout(dropout)
+#         self.dropout2 = nn.Dropout(dropout)
         
-        self.activation = nn.ReLU()
+#         self.activation = nn.ReLU()
     
+#     def forward(self, src):
+#         src2 = self.self_attn(src, src, src)[0]
+#         src = src + self.dropout1(src2)
+#         src = self.norm1(src)
+#         src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
+#         src = src + self.dropout2(src2)
+#         src = self.norm2(src)
+#         return src
+
+class TransformerEncoder_version2(nn.Module):
+    def __init__(self, past_seq_len, num_layers, d_model, nhead, input_dim=1, dropout=0.1):
+        super(TransformerEncoder_version2, self).__init__()
+        self.d_model = d_model
+        self.past_seq_len = past_seq_len
+        
+        # Positional Encoding (green block in the figure)
+        self.pos_encoder = PositionalEncoding(d_model)
+        
+        # Initial projection of input data
+        self.input_projection = nn.Sequential(
+            nn.Linear(input_dim, d_model),
+            nn.LayerNorm(d_model)
+        )
+        
+        # Stack of Encoder Layers
+        self.encoder_layers = nn.ModuleList([])
+        for _ in range(num_layers):
+            # Each encoder layer contains:
+            layer = nn.ModuleDict({
+                # 1. Multi-Head Attention block (yellow in figure)
+                'attention': nn.MultiheadAttention(
+                    embed_dim=d_model,
+                    num_heads=nhead,
+                    dropout=dropout,
+                    batch_first=True
+                ),
+                # 2. Add & Norm after attention (yellow in figure)
+                'norm1': nn.LayerNorm(d_model),
+                
+                # 3. Feed Forward block (blue in figure)
+                'feed_forward': nn.Sequential(
+                    nn.Linear(d_model, d_model),
+                    nn.ReLU(),
+                    # nn.Dropout(dropout),
+                    # nn.Linear(d_model, d_model)
+                ),
+                # 4. Add & Norm after feed forward (yellow in figure)
+                'norm2': nn.LayerNorm(d_model)
+            })
+            self.encoder_layers.append(layer)
+
+        # # Fully Connected output layer (orange in figure)
+        # self.output_layer = nn.Sequential(
+        #     nn.Linear(d_model, past_seq_len),
+        #     nn.ReLU(),
+        #     nn.Dropout(dropout),
+        #     nn.Linear(past_seq_len, 1)
+        # )
+        
+        # 5. two linear layers with dimension reduction, matching the layer names in figure 6
+        self.linear2 = nn.Linear(d_model, 1)
+        self.linear3 = nn.Linear(past_seq_len, 1)
+        
     def forward(self, src):
-        src2 = self.self_attn(src, src, src)[0]
-        src = src + self.dropout1(src2)
-        src = self.norm1(src)
-        src2 = self.linear2(self.dropout(self.activation(self.linear1(src))))
-        src = src + self.dropout2(src2)
-        src = self.norm2(src)
-        return src
-    
+        # src shape: [batch_size, seq_len, input_dim]
+        
+        # Initial projection and positional encoding
+        x = self.input_projection(src)
+        x = self.pos_encoder(x)
+        
+        # Process through encoder layers
+        for layer in self.encoder_layers:
+            # Multi-Head Attention
+            attn_output, _ = layer['attention'](x, x, x)
+            # Add & Norm (first residual connection)
+            x = layer['norm1'](x + attn_output)
+            # Feed Forward
+            ff_output = layer['feed_forward'](x)
+            # Add & Norm (second residual connection)
+            x = layer['norm2'](x + ff_output)
+        
+        # print('x2: ', x.shape)
+        # Global average pooling over sequence length
+        # x = x.mean(dim=2)
+
+        # print('x3: ', x.shape)
+        x = self.linear2(x)
+        x = x.squeeze(-1)
+        output = self.linear3(x)
+        # print('output2: ', output.shape)
+        # print('output: ', output)   
+        return output
+
+
+
+
 class TransformerEncoder(nn.Module):
     # !!! This class is the final model !!!
     def __init__(self, num_layers, d_model, nhead, input_dim=1, dim_feedforward=256, dropout=0.1):
@@ -114,7 +200,7 @@ class TransformerEncoder(nn.Module):
         
         # Fully Connected output layer (orange in figure)
         self.output_layer = nn.Sequential(
-            nn.Linear(d_model, dim_feedforward),
+            nn.Linear(d_model, dim_feedforward), # 12
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(dim_feedforward, 1)
@@ -169,6 +255,34 @@ def load_ohio_series_train(path_filename, variate_name, attribute, time_attribue
             # Rename the columns (optional)
             seriesdf.columns = ['timestamp', 'mg/dl']
             return seriesdf
+
+# population data splits on OhioT1DM-1 dataset
+def create_population_splits(folder_path_train_2018, folder_path_train_2020, train_files_2018, train_files_2020,
+                             folder_path_test_2018, folder_path_test_2020, test_files_2018, test_files_2020):
+    # Create full paths for all files
+    train_2018 = [os.path.join(folder_path_train_2018, f) for f in train_files_2018]
+    train_2020 = [os.path.join(folder_path_train_2020, f) for f in train_files_2020]
+    
+    test_2018 = [os.path.join(folder_path_test_2018, f) for f in test_files_2018]
+    test_2020 = [os.path.join(folder_path_test_2020, f) for f in test_files_2020]
+    
+    # Combine all paths
+    all_train = train_2018 + train_2020
+    all_test = test_2018 + test_2020
+    
+    population_splits = {
+        'train': all_train,
+        'test': all_test
+    }
+        
+    print(f"Test file: {population_splits['test']}")
+    print(f"Number of training files: {len(population_splits['train'])}")
+    print("Training files:")
+    for train_path in population_splits['train'][:3]:  # Show first 3 training files
+        print(f"  {os.path.basename(train_path)}")
+    
+    return population_splits
+    
 
 def create_loocv_splits(folder_path_train_2018, folder_path_train_2020, train_files_2018, train_files_2020):
     # Create full paths for all files
@@ -380,6 +494,118 @@ def evaluate_model(model, data_loader, criterion):
     val_loss /= len(data_loader)
     return val_loss
 
+def evaluate_and_save_metrics_population(model, test_file_path, save_dir="metrics", 
+                            past_sequence_length=7, future_offset=6, 
+                            batch_size=32, max_interval_minutes=30):
+    """
+    Evaluate model performance on test data and save metrics to file.
+    
+    Args:
+        model: The trained model
+        test_file_path: Path to test file
+        save_dir: Directory to save metrics
+        past_sequence_length: Length of input sequence
+        future_offset: Prediction horizon
+        batch_size: Batch size for testing
+        max_interval_minutes: Maximum interval between readings to consider continuous
+    """
+    # Create save directory if it doesn't exist
+    os.makedirs(save_dir, exist_ok=True)
+    
+    # Load and preprocess test data
+    test_df = pd.DataFrame([])
+    for path in test_file_path:
+        cur_test_df = load_ohio_series_train(path, "glucose_level", "value")
+        test_df = pd.concat([test_df, cur_test_df])
+    print(test_df.shape)
+    
+    # test_df = load_ohio_series_train(test_file_path, "glucose_level", "value")
+    test_df['timestamp'] = pd.to_datetime(test_df['timestamp'])
+    test_df = test_df.sort_values('timestamp')
+    
+    # Split into continuous series
+    test_series_list = split_into_continuous_series(test_df, past_sequence_length, future_offset,max_interval_minutes)
+    
+    # Create dataset and dataloader
+    test_dataset, _ = create_train_val_datasets(
+        test_series_list,
+        train_ratio=0.99,
+        past_seq_len=past_sequence_length,
+        future_offset=future_offset
+    )
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
+    # Evaluate model
+    model.eval()
+    predictions = []
+    ground_truths = []
+    
+    with torch.no_grad():
+        for inputs, targets in test_loader:
+            inputs = inputs.to('cuda') if torch.cuda.is_available() else inputs
+            targets = targets.to('cuda') if torch.cuda.is_available() else targets
+            
+            outputs = model(inputs)
+            predictions.extend(outputs.cpu().numpy())
+            ground_truths.extend(targets.cpu().numpy())
+    
+    # Convert to numpy arrays
+    predictions = np.array(predictions).flatten()
+    ground_truths = np.array(ground_truths).flatten()
+    
+    # Calculate metrics
+    rmse = np.sqrt(mean_squared_error(ground_truths, predictions))
+    mae = np.mean(np.abs(predictions - ground_truths))
+    mape = np.mean(np.abs((ground_truths - predictions) / ground_truths)) * 100
+    
+    # Print metrics
+    print(f'Test file: population')
+    print(f'Root Mean Square Error (RMSE): {rmse:.2f}')
+    print(f'Mean Absolute Error (MAE): {mae:.2f}')
+    print(f'Mean Absolute Percentage Error (MAPE): {mape:.2f}%')
+    
+    # Save metrics to file
+    metrics_filename = f"metrics_population.txt"
+    metrics_path = os.path.join(save_dir, metrics_filename)
+    
+    with open(metrics_path, 'w') as f:
+        f.write(f"Test File: population'\n")
+        f.write(f"RMSE: {rmse:.2f}\n")
+        f.write(f"MAE: {mae:.2f}\n")
+        f.write(f"MAPE: {mape:.2f}%\n")
+    
+    # Create plots
+    plt.figure(figsize=(12, 6))
+    
+    plt.subplot(1, 2, 1)
+    plt.plot(predictions[:200], label='Predictions', color='r')
+    plt.plot(ground_truths[:200], label='Ground Truth', color='b')
+    plt.xlabel('Sample')
+    plt.ylabel('Value')
+    plt.title('Predictions vs Ground Truth')
+    plt.legend()
+    
+    plt.subplot(1, 2, 2)
+    plt.scatter(ground_truths, predictions, alpha=0.5)
+    plt.plot([min(ground_truths), max(ground_truths)], 
+             [min(ground_truths), max(ground_truths)], 
+             'r--', label='Perfect Prediction')
+    plt.xlabel('Ground Truth')
+    plt.ylabel('Predictions')
+    plt.title(f'Scatter Plot (RMSE: {rmse:.2f})')
+    plt.legend()
+    
+    plt.tight_layout()
+    plt.show()
+    
+    return {
+        'rmse': rmse,
+        'mae': mae,
+        'mape': mape,
+        'predictions': predictions,
+        'ground_truths': ground_truths
+    }
+
 def evaluate_and_save_metrics(model, test_file_path, save_dir="metrics", 
                             past_sequence_length=7, future_offset=6, 
                             batch_size=32, max_interval_minutes=30):
@@ -515,5 +741,28 @@ def load_model(test_file_path, model_class=TransformerEncoder, save_dir='saved_m
     model = model.to(device)
     model.eval()
     
+    print(f"Model loaded from {model_path}")
+    return model
+
+def load_model_population(test_file_path, past_sequence_length, model_class=TransformerEncoder_version2, save_dir='saved_models'):
+    # Extract the base filename from the test file path
+    test_file_name = os.path.splitext(os.path.basename(test_file_path))[0]
+    model_path = os.path.join(save_dir, f'model_{test_file_name}.pth')
+
+    model = TransformerEncoder_version2(
+        past_seq_len=past_sequence_length,
+        num_layers=1,
+        d_model=512,
+        nhead=4,
+        input_dim=1,
+        dropout=0.2
+    )
+
+    # Load the saved weights
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model = model.to(device)
+    model.eval()
+
     print(f"Model loaded from {model_path}")
     return model
