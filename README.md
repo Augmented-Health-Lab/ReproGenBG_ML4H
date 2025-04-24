@@ -6,6 +6,11 @@ This repository contains the implementation and replication code for our study:
 ## Abstract: 
 (Place holder for abstract)
 
+
+## Literature review summary
+
+We reviewed 60 peer-reviewed papers published between 2018 and 2025 that introduce and evaluate deep learning models for blood glucose prediction. Drawing on prior work, we assessed each study against key factors impacting reproducibility, including: (1) availability of code and data, (2) completeness of model reporting (e.g., hyperparameters and tuning), and (3) use of standardized evaluation protocols (e.g., prediction horizon and metrics). All reviewed papers appeared in engineering or interdisciplinary journals and conferences. A summary table of our literature review is available here: [literature review table](Literature_review_summary/Submit%20version%20of%20literature%20review%20table.xlsx).
+
 ---
 
 ## 📂 Repository Structure
