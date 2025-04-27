@@ -25,7 +25,7 @@ def main():
         pids = pid_year[year]
         for pid in pids:
             reader = DataReader(
-                "ohio", f"C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/OhioT1DM 2020/{year}/train/{pid}-ws-training.xml", 5
+                "ohio", f"../../../datasets/OhioT1DM/{year}/train/{pid}-ws-training.xml", 5
             )
             train_data[pid] = reader.read()
 
@@ -35,13 +35,13 @@ def main():
     test_data_2018 = []
     for pid in pid_2018:
         reader = DataReader(
-            "ohio", f"C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/OhioT1DM 2020/2018/test/{pid}-ws-testing.xml", 5
+            "ohio", f"../../../datasets/OhioT1DM/2018/test/{pid}-ws-testing.xml", 5
         )
         test_data_2018 += reader.read()
 
     # Initialize a dummy dataset instance
     train_dataset = CGMSDataSeg(
-        "ohio", "C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/OhioT1DM 2020/2018/train/559-ws-training.xml", 5
+        "ohio", "../../../datasets/OhioT1DM/2018/train/559-ws-training.xml", 5
     )
 
     # Load configuration
@@ -100,7 +100,7 @@ def main():
 
             # Fine-tune on personal data
             target_test_dataset = CGMSDataSeg(
-                "ohio", f"C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/OhioT1DM 2020/{year}/test/{pid}-ws-testing.xml", 5
+                "ohio", f"../../../datasets/OhioT1DM/{year}/test/{pid}-ws-testing.xml", 5
             )
             target_test_dataset.set_cutpoint = 1
             target_test_dataset.reset(
@@ -114,7 +114,7 @@ def main():
                 standard,
             )
             target_train_dataset = CGMSDataSeg(
-                "ohio", f"C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/OhioT1DM 2020/{year}/train/{pid}-ws-training.xml", 5
+                "ohio", f"../../../datasets/OhioT1DM/{year}/train/{pid}-ws-training.xml", 5
             )
             target_train_dataset.set_cutpoint = -1
             target_train_dataset.reset(

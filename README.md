@@ -16,11 +16,15 @@ We reviewed 60 peer-reviewed papers published between 2018 and 2025 that introdu
 ## 📂 Repository Structure
 The repository is organized as follows:
 
-- `MartinssonAndvanDoorn/` – Implementation of Martinsson et al. and vanDoorn et al.
-- `AccurateBG/` – Implementation of Deng et al.
-- `GlucoseTransformer/` – Implementation of Lee et al.
-- `GluNet/` – Implementation of Li et al.
-- `Stacked LSTM/` – Implementation of Rabby et al.
+- `AccurateBG/` – The implementation of Deng et al.
+- `Baseline/` – The implementation of baseline method. 
+- `dataset_preprocessing/` - Includes data preprocesssing script, subset patient id, and fold split. 
+- `GlucoseTransformer_organized/` – The implementation of Lee et al.
+- `GluNet/` – The implementation of Li et al.
+- `Literature_review_summary/` - Summarize from the lierature
+- `Martinsson/` – The implementation of Martinsson et al. 
+- `vanDoorn/` - The implementation of vanDoorn et al.
+- `Stacked LSTM/` – The implementation of Rabby et al.
 - `requirements.txt` – Python package dependencies
 - `README.md` – Project overview and instructions (you are here)
 
@@ -47,8 +51,8 @@ Please refer to the data preparation instructions for each dataset below.
 **Note:** Due to licensing restrictions, raw datasets are not included in this repository.
 
 - **OhioT1DM**: Request the access to the dataset: https://webpages.charlotte.edu/rbunescu/data/ohiot1dm/OhioT1DM-dataset.html
-- **DiaTrend**: Request access thru Synapse (www.synapse.org). 
-- **T1DEXI**: Apply for access Vivli (https://search.vivli.org/doiLanding/studies/PR00008428/isLanding)
+- **DiaTrend**: Request access thru Synapse: https://www.synapse.org/Synapse:syn38187184/wiki/619490. 
+- **T1DEXI**: Apply for access Vivli: https://search.vivli.org/doiLanding/studies/PR00008428/isLanding.
 
 After accessing these three datasets, please follow these instructions for data sanitation:
 
@@ -67,18 +71,18 @@ Before you run the command, please ensure to change the data path in config yaml
 ##### OhioT1DM:
 
 ```bash
-python ./MartinssonAndvanDoorn/ohio_main.py
+python ./Martinsson/ohio_main.py
 ```
 ##### DiaTrend:
 
 ```bash
-python ./MartinssonAndvanDoorn/diatrend_main.py
+python ./Martinsson/diatrend_main.py
 ```
 
 ##### T1DEXI:
 
 ```bash
-python ./MartinssonAndvanDoorn/t1dexi_main.py
+python ./Martinsson/t1dexi_main.py
 ```
 
 #### 2.2 Li et al., 2021 [2]
@@ -88,18 +92,18 @@ python ./MartinssonAndvanDoorn/t1dexi_main.py
 ##### OhioT1DM:
 
 ```bash
-python ./MartinssonAndvanDoorn/vandoorn_ohio_main.py
+python ./vanDoorn/vandoorn_ohio_main.py
 ```
 ##### DiaTrend:
 
 ```bash
-python ./MartinssonAndvanDoorn/vandoorn_diatrend_main.py
+python ./vanDoorn/vandoorn_diatrend_main.py
 ```
 
 ##### T1DEXI:
 
 ```bash
-python ./MartinssonAndvanDoorn/vandoorn_t1dexi_main.py
+python ./vanDoorn/vandoorn_t1dexi_main.py
 ```
 
 

@@ -55,14 +55,14 @@ def main():
     ph = 12
     path = "../diatrend_results"
     # Define the directory path
-    train_directory_path = r'C:\Users\username\OneDrive\Desktop\BGprediction\DiaTrend\train'  # Use a raw string for paths on Windows
+    train_directory_path = f'../../../dataset/DiaTrend/train'  # Use a raw string for paths on Windows
 
     # List files without their extensions
     train_file_names = [os.path.splitext(file)[0] for file in os.listdir(train_directory_path)
                 if os.path.isfile(os.path.join(train_directory_path, file))]
     
     # Define the directory path
-    test_directory_path = r'C:\Users\username\OneDrive\Desktop\BGprediction\DiaTrend\test'  # Use a raw string for paths on Windows
+    test_directory_path = f'../../../dataset/DiaTrend/test'  # Use a raw string for paths on Windows
 
     # List files without their extensions
     test_file_names = [os.path.splitext(file)[0] for file in os.listdir(test_directory_path)

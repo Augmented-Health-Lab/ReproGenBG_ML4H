@@ -78,12 +78,12 @@ def main():
     for sh in [6, 12, 18, 24]:
         for fold_num in range(1, 6):
             # Load training data
-            train_directory_path = f'C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_t1dexi_subset/T1DEXI_cgm_processed/fold{fold_num}_training'
+            train_directory_path = f'../../../datasets/t1dexi_subset/fold{fold_num}_training'
             train_file_names = [os.path.splitext(file)[0] for file in os.listdir(train_directory_path)
                                 if os.path.isfile(os.path.join(train_directory_path, file))]
 
             # Load test data
-            test_directory_path = f'C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_t1dexi_subset/T1DEXI_cgm_processed/fold{fold_num}_test'
+            test_directory_path = f'../../../datasets/t1dexi_subset/fold{fold_num}_test'
             test_file_names = [os.path.splitext(file)[0] for file in os.listdir(test_directory_path)
                                if os.path.isfile(os.path.join(test_directory_path, file))]
 

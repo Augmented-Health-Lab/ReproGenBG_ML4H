@@ -59,13 +59,13 @@ def main():
     for sh in [6, 12, 18, 24]:
         for fold_num in range(1, 6):
             # Load training data
-            train_directory_path = f'C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold{fold_num}_training'
+            train_directory_path = f'../../../datasets/diatrend_subset/fold{fold_num}_training'
             train_file_names = [os.path.splitext(file)[0] for file in os.listdir(train_directory_path)
                                 if os.path.isfile(os.path.join(train_directory_path, file))]
             cleaned_subjects = [s.replace("processed_cgm_data_", "") for s in train_file_names]
 
             # Load test data
-            test_directory_path = f'C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold{fold_num}_test'
+            test_directory_path = f'../../../datasets/diatrend_subset/fold{fold_num}_test'
             test_file_names = [os.path.splitext(file)[0] for file in os.listdir(test_directory_path)
                                if os.path.isfile(os.path.join(test_directory_path, file))]
             cleaned_test_subjects = [s.replace("processed_cgm_data_", "") for s in test_file_names]
@@ -73,18 +73,18 @@ def main():
             # Preprocess training data
             train_data = {}
             for subj in train_file_names:
-                subj_path = f'C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold{fold_num}_training/{subj}.csv'
+                subj_path = f'../../../datasets/diatrend_subset/fold{fold_num}_training/{subj}.csv'
                 train_data[subj] = preprocess_DiaTrend(subj_path)
 
             # Preprocess test data
             test_data = {}
             for subj in test_file_names:
-                subj_path = f'C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold{fold_num}_test/{subj}.csv'
+                subj_path = f'../../../datasets/diatrend_subset/fold{fold_num}_test/{subj}.csv'
                 test_data[subj] = preprocess_DiaTrend(subj_path)
 
             # Initialize dataset
             train_dataset = CGMSDataSeg(
-                "diatrend", "C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold1_training/processed_cgm_data_Subject12.csv", 5
+                "diatrend", "../../../datasets/diatrend_subset/fold1_training/processed_cgm_data_Subject12.csv", 5
             )
             sampling_horizon = sh
             prediction_horizon = ph
@@ -137,7 +137,7 @@ def main():
             all_errs = []
             for pid in cleaned_test_subjects:
                 target_test_dataset = CGMSDataSeg(
-                    "diatrend", f"C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold{fold_num}_test/processed_cgm_data_{pid}.csv", 5
+                    "diatrend", f"../../../datasets/diatrend_subset/fold{fold_num}_test/processed_cgm_data_{pid}.csv", 5
                 )
                 target_test_dataset.set_cutpoint = 1
                 target_test_dataset.reset(
