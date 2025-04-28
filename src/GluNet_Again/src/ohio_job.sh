@@ -21,12 +21,11 @@ echo "Running Python"
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 # Arrays for folds and inputs
-folds=(1 2 3 4 5)
-inputs=(12 18 24)
+inputs=(6 12 18 24)
 
 # Loop through both folds and inputs
 for input in "${inputs[@]}"
 do
-  echo "Running Python with fold: $fold and input: $input"
+  echo "Running Python with input: $input"
   python3 ./GluNet_Ohio.py "$input"
 done
