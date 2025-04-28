@@ -1,0 +1,17 @@
+graphviz==0.20.3
+librosa==0.10.2.post1
+matplotlib==3.8.4
+numpy==2.1.1
+pandas==2.2.2
+PyYAML==6.0.1
+PyYAML==6.0.2
+scikit_learn==1.4.2
+scipy==1.14.1
+seaborn==0.13.2
+setuptools==58.1.0
+tensorflow==2.10.1
+tensorflow_intel==2.16.1
+torch==2.2.1+cu118
+openpyxl
+shutil
+tqdm

@@ -1,0 +1,26 @@
+dataset:
+  script_path: ../datasets/t1dexi.py
+  csv_path: ../../datasets/t1dexi_subset/fold3_training/all
+  nb_past_steps: 12
+  param_nb_future_steps: [6]
+  train_fraction: 0.8
+  valid_fraction: 0.2
+  test_fraction: 0
+  scale: 0.01
+model:
+  script_path: ../models/lstm_experiment_keras.py
+  nb_lstm_states: 256
+  activation_function: exp
+optimizer:
+  script_path: ../optimizers/adam_keras.py
+  learning_rate: 1e-3
+loss_function:
+  script_path: ../loss_functions/nll_keras.py
+train:
+  script_path: ../train/train_keras.py
+  artifacts_path: ../artifacts/martinsson_t1dexi_experiment_12sh/
+  batch_size: 1024
+  epochs: 10000
+  patience: 200
+  shuffle: True
+  param_seed: [20]

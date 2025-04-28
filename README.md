@@ -1,54 +1,167 @@
-# Investigating the Reproducibility and Generalizability of Deep Learning Methods for Blood Glucose Prediction
+# Deep Learning for Blood Glucose Prediction: Reproducibility and Generalizability
 
-## Study introduction
-Paper Abstract: The growing prevalence of mobile health monitoring devices is expediting the development of machine learning methods for blood glucose prediction. However, open questions remain about the reproducibility and generalizability of predictive models in the literature. To address this gap, our study sought to investigate the reproducibility and generalizability of six state-of-the-art deep learning models for the task of blood glucose prediction using three publicly available datasets: OhioT1DM, DiaTrend, and T1DEXI. From careful re-implementation and evaluation, we found an average difference of 4.83 mg/dL in the RMSE compared with the paper-reported results. We also found that most prediction models had worse performance (i.e., higher errors) when tested on a dataset and/or subject with more glycemic variability and higher mean blood glucose values. Finally, we found that training-related factors, such as the model complexity and sampling horizon have a limited impact on the models' performance and generalizability. Insights from this study can serve as a basis for increasing the transparency on predictive methods proposed in the literature and the development of more robust models for real-world implementation.
+This repository contains the implementation and replication code for our study:  
+**"Deep Learning for Blood Glucose Prediction: Investigating Reproducibility, Bias, and Factors Affecting Differential Performance."**
 
-## Code index
-
-All of the implementations of this study are based on JupyterNotebook. The index can help researchers to find the .ipynb files that hold the reproduction code.
-1. Martinsson2019: 
-    - [Reproduce on OhioT1DM](./MartinssonAndvanDoorn/verify_example_paper_method.ipynb)
-    - [Reproduce on DiaTrend](./MartinssonAndvanDoorn/verify_with_DiaTrend.ipynb)
-    - [Reproduce on T1DEXI](./MartinssonAndvanDoorn/verify_with_T1DEXI.ipynb)
-
-2. vanDoorn2021:
-    - [Reproduce on OhioT1DM](./MartinssonAndvanDoorn/verify_method1_vanDoorn.ipynb)
-    - [Reproduce on DiaTrend](./MartinssonAndvanDoorn/verify_method1_vanDoorn.ipynb)
-    - [Reproduce on T1DEXI](./MartinssonAndvanDoorn/verify_method1_vanDoorn.ipynb)
-
-3. Deng2021:
-    - [Reproduce on OhioT1DM](./AccurateBG/accurate_bg/verify_method.ipynb)
-    - [Reproduce on DiaTrend](./AccurateBG/accurate_bg/verify_diatrend.ipynb)
-    - [Reproduce on T1DEXI](./AccurateBG/accurate_bg/verify_t1dexi.ipynb)
-
-4. Kim2020:
-    - [Reproduce on OhioT1DM](./Blood-Glucose-Prediction-LSTM/apply_on_ohiot1dm.ipynb)
-    - [Reproduce on DiaTrend](./Blood-Glucose-Prediction-LSTM/apply_on_diatrend.ipynb)
-    - [Reproduce on T1DEXI](./Blood-Glucose-Prediction-LSTM/apply_on_t1dexi.ipynb)
-
-5. Li2020:
-    - [Reproduce on OhioT1DM](./pytorch-wavenet/Final_version_replicate_Glunet.ipynb)
-    - [Reproduce on T1DEXI](./GluNet/t1dexi_GluNet.ipynb)
-
-6. Rabby2021:
-    - [Reproduce on OhioT1DM](./Stacked%20LSTM/final_replicate_StackedLSTM.ipynb)
-    - [Reproduce on T1DEXI](./Stacked%20LSTM/verify_with_t1dexi.ipynb)
-
-## Dataset sources:
-There three datasets are all open-sourced
-1. OhioT1DM: Marling C, Bunescu R. The OhioT1DM Dataset for Blood Glucose Level Prediction: Update 2020. CEUR Workshop Proc. 2020 Sep;2675:71-74. PMID: 33584164; PMCID: PMC7881904.
-2. DiaTrend: Prioleau, T., Bartolome, A., Comi, R. et al. DiaTrend: A dataset from advanced diabetes technology to enable development of novel analytic solutions. Sci Data 10, 556 (2023). https://doi.org/10.1038/s41597-023-02469-5
-3. T1DEXI: Riddell MC, Li Z, Gal RL, Calhoun P, Jacobs PG, Clements MA, Martin CK, Doyle Iii FJ, Patton SR, Castle JR, Gillingham MB, Beck RW, Rickels MR; T1DEXI Study Group. Examining the Acute Glycemic Effects of Different Types of Structured Exercise Sessions in Type 1 Diabetes in a Real-World Setting: The Type 1 Diabetes and Exercise Initiative (T1DEXI). Diabetes Care. 2023 Apr 1;46(4):704-713. doi: 10.2337/dc22-1721. PMID: 36795053; PMCID: PMC10090894.
+## Abstract: 
+(Place holder for abstract)
 
 
+## Literature review summary
 
-## Code Reference Claim
-This study investigate the reproducibility and generalizability of the state-of-the-art deep learning blood glucose prediction methods. Some code of this study partially relies on the provided code from the studies discussed in the paper. The studies include：
-1. Martinsson J, Schliep A, Eliasson B, Mogren O. Blood Glucose Prediction with Variance Estimation Using Recurrent Neural Networks. J Healthc Inform Res. 2019 Dec 1;4(1):1-18. doi: 10.1007/s41666-019-00059-y. PMID: 35415439; PMCID: PMC8982803. Code:  https://github.com/johnmartinsson/blood-glucose-prediction. 
+We reviewed 60 peer-reviewed papers published between 2018 and 2025 that introduce and evaluate deep learning models for blood glucose prediction. Drawing on prior work, we assessed each study against key factors impacting reproducibility, including: (1) availability of code and data, (2) completeness of model reporting (e.g., hyperparameters and tuning), and (3) use of standardized evaluation protocols (e.g., prediction horizon and metrics). All reviewed papers appeared in engineering or interdisciplinary journals and conferences. A summary table of our literature review is available here: [literature review table](Literature_review_summary/Submit%20version%20of%20literature%20review%20table.xlsx).
 
-2.  Deng, Y., Lu, L., Aponte, L. et al. Deep transfer learning and data augmentation improve glucose levels prediction in type 2 diabetes patients. npj Digit. Med. 4, 109 (2021). https://doi.org/10.1038/s41746-021-00480-x. Code: https://github.com/yixiangD/AccurateBG.
-3. Kim D-Y, Choi D-S, Kim J, Chun SW, Gil H-W, Cho N-J, Kang AR, Woo J. Developing an Individual Glucose Prediction Model Using Recurrent Neural Network. Sensors. 2020; 20(22):6460. https://doi.org/10.3390/s20226460. Code: https://github.com/dongsikchoi/Blood-Glucose-Prediction-LSTM
+---
 
-The implementation of GluNet referred the Github repo:
-https://github.com/vincentherrmann/pytorch-wavenet/tree/master and https://github.com/ibab/tensorflow-wavenet/tree/master .
+## 📂 Repository Structure
+The repository is organized as follows:
 
+- `AccurateBG/` – The implementation of Deng et al.
+- `Baseline/` – The implementation of baseline method. 
+- `dataset_preprocessing/` - Includes data preprocesssing script, subset patient id, and fold split. 
+- `GlucoseTransformer_organized/` – The implementation of Lee et al.
+- `GluNet/` – The implementation of Li et al.
+- `Literature_review_summary/` - Summarize from the lierature
+- `Martinsson/` – The implementation of Martinsson et al. 
+- `vanDoorn/` - The implementation of vanDoorn et al.
+- `Stacked LSTM/` – The implementation of Rabby et al.
+- `requirements.txt` – Python package dependencies
+- `README.md` – Project overview and instructions (you are here)
+
+
+---
+
+## 📋 Requirements
+
+```bash
+# Create and activate a virtual environment (optional)
+python -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+
+## 🚀 How to Run
+
+### 1. Prepare the Dataset
+
+Please refer to the data preparation instructions for each dataset below.  
+**Note:** Due to licensing restrictions, raw datasets are not included in this repository.
+
+- **OhioT1DM**: Request the access to the dataset: https://webpages.charlotte.edu/rbunescu/data/ohiot1dm/OhioT1DM-dataset.html
+- **DiaTrend**: Request access thru Synapse: https://www.synapse.org/Synapse:syn38187184/wiki/619490. 
+- **T1DEXI**: Apply for access Vivli: https://search.vivli.org/doiLanding/studies/PR00008428/isLanding.
+
+After accessing these three datasets, please follow these instructions for data sanitation:
+
+Create a folder on the same level with the pulled "ReproGenBG_ML4H" folder. Name it as "datasets"
+
+- **OhioT1DM**: Please directly put the dataset folder into this directory: `../datasets/[OhioT1DM]`. Also copy all the xml files from folder 2018 and 2020 to another folder "both" in the same folder as 2018 and 2020. 
+- **DiaTrend**: Please following [this script](dataset_preprocessing/diatrend_preprocessing.py) for data preprocessing. And please put the generated `../datasets/diatrend_subset/fold[N]_training` and `../datasets/diatrend_subset/processed_cgm_data_Subject[N].csv`
+- **T1DEXI**: Please following this [subset list](dataset_preprocessing/selected_t1dexi.txt) and notebook for data preprocessing. And please put the generated `../datasets/t1dexi_subset/fold[N]_training` and `../datasets/t1dexi_subset/[N].csv`
+
+### 2. Run the Models
+
+Each dataset has a dedicated main script to train and evaluate all six methods. And the parameters are all based on the version provided by the original studies. 
+
+#### 2.1 Martinsson et al., 2019 [1]
+Before you run the command, please ensure to change the data path in config yaml file 
+##### OhioT1DM:
+
+```bash
+python ./Martinsson/ohio_main.py
+```
+##### DiaTrend:
+
+```bash
+python ./Martinsson/diatrend_main.py
+```
+
+##### T1DEXI:
+
+```bash
+python ./Martinsson/t1dexi_main.py
+```
+
+#### 2.2 Li et al., 2021 [2]
+
+
+#### 2.3 van Doorn et al., 2021 [3]
+##### OhioT1DM:
+
+```bash
+python ./vanDoorn/vandoorn_ohio_main.py
+```
+##### DiaTrend:
+
+```bash
+python ./vanDoorn/vandoorn_diatrend_main.py
+```
+
+##### T1DEXI:
+
+```bash
+python ./vanDoorn/vandoorn_t1dexi_main.py
+```
+
+
+#### 2.4 Deng et al., 2021
+##### OhioT1DM:
+
+```bash
+python ./AccurateBG/accurate_bg/new_ohio_main.py
+```
+##### DiaTrend:
+
+```bash
+python ./AccurateBG/accurate_bg/diatrend_main.py
+```
+
+##### T1DEXI:
+
+```bash
+python ../AccurateBG/accurate_bg/t1dexi_main.py
+```
+
+#### 2.5 Rabby et al., 2021
+
+
+
+#### 2.6 Lee et al., 2021
+##### OhioT1DM:
+
+```bash
+python ./GlucoseTransformer_organized/ohio_main.py
+```
+##### DiaTrend:
+
+```bash
+python ./GlucoseTransformer_organized/diatrend_main.py
+```
+
+##### T1DEXI:
+
+```bash
+python ../GlucoseTransformer_organized/t1dexi_main.py
+```
+
+
+## 📚 References
+
+This work builds on prior studies in blood glucose prediction and reproducibility in machine learning. Key references include:
+
+- [1] Martinsson, J., Schliep, A., Eliasson, B. et al. Blood Glucose Prediction with Variance Estimation Using Recurrent Neural Networks. J Healthc Inform Res 4, 1–18 (2020). https://doi.org/10.1007/s41666-019-00059-y
+- [2] K. Li, C. Liu, T. Zhu, P. Herrero and P. Georgiou, "GluNet: A Deep Learning Framework for Accurate Glucose Forecasting," in IEEE Journal of Biomedical and Health Informatics, vol. 24, no. 2, pp. 414-423, Feb. 2020, doi: 10.1109/JBHI.2019.2931842.
+- [3] van Doorn WPTM, Foreman YD, Schaper NC, Savelberg HHCM, Koster A, et al. (2021) Machine learning-based glucose prediction with use of continuous glucose and physical activity monitoring data: The Maastricht Study. PLOS ONE 16(6): e0253125. https://doi.org/10.1371/journal.pone.0253125
+- [4] Deng, Y., Lu, L., Aponte, L. et al. Deep transfer learning and data augmentation improve glucose levels prediction in type 2 diabetes patients. npj Digit. Med. 4, 109 (2021). https://doi.org/10.1038/s41746-021-00480-x
+- [5] Rabby, M.F., Tu, Y., Hossen, M.I. et al. Stacked LSTM based deep recurrent neural network with kalman smoothing for blood glucose prediction. BMC Med Inform Decis Mak 21, 101 (2021). https://doi.org/10.1186/s12911-021-01462-5
+- [6] S. -M. Lee, D. -Y. Kim and J. Woo, "Glucose Transformer: Forecasting Glucose Level and Events of Hyperglycemia and Hypoglycemia," in IEEE Journal of Biomedical and Health Informatics, vol. 27, no. 3, pp. 1600-1611, March 2023, doi: 10.1109/JBHI.2023.3236822.
+
+
+Reference Code:
+- [1] Martinsson et al., 2019 : https://github.com/johnmartinsson/blood-glucose-prediction 
+- [4] Deng et al., 2021: https://github.com/yixiangD/AccurateBG 
+
+For implementation details and replication instructions, please see each method-specific folder and referenced repositories.
