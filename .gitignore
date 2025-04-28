@@ -1,3 +1,18 @@
 .DS_Store
+<<<<<<< HEAD
+.venv/
+*.csv
+*.xml
+*.pkl
+*.pth
+*.err
+*.out
+.vscode/
+data/
+Litreview/
+StackedLSTM_again/*
+StackedLSTM_again/processed_data/559_test_combined_segments_noshrink_ONLYCGM.pkl
+=======
 myvenv
 check_version.py
+>>>>>>> origin/main
