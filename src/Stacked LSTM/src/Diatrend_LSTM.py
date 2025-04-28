@@ -22,13 +22,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 
 
-# Check if the GPU is available
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}', flush = True)
 
+
 # Set backends to true for faster training
 torch.backends.cudnn.benchmark = True
-
 
 ##############################################################################
 #                     
@@ -244,167 +243,11 @@ def get_gdata(filename):
     upper_percentile = np.percentile(glucose_df['glucose_value'], 98)
 
     # Print thresholds
-    filename = os.path.basename(j)
+    filename = os.path.basename(filename)
     file_number = int(filename.split('Subject')[-1].split('.')[0])  
     segments = segement_data_as_6_min(glucose_df, file_number)
     
     return segments
-
-
-##############################################################################
-#                     
-#
-#                                 TRAINING 
-#
-#
-##############################################################################
-
-
-# HYPERPARAMETERS
-input_size = 1
-hidden_size = 128
-num_layers = 2  
-output_size = 1 
-dropout_prob = 0.2  
-ph = 6
-num_epochs =100
-batch_size = 128
-
-
-# input_size, hidden_size, num_layers, output_size, dropout_prob
-model = StackedLSTM(input_size, hidden_size, num_layers, output_size, dropout_prob) 
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.00005)
-
-# This is to split the data into 5 folds for cross-validation
-splits = [0, 11, 22, 33, 44, 54]
-
-# Ensures that a fold is provided as a command line argument, if not, it defaults to fold 1
-if len(sys.argv) > 2: 
-    fold = sys.argv[1]
-    bot_range = splits[int(fold) -1]
-    top_range = splits[int(fold)]
-    history_len = int(sys.argv[2])
-else: 
-    print ("DEFAULTING TO FOLD 1")
-    fold = 1
-    bot_range = splits[0]
-    top_range = splits[1]
-    history_len = 6
-
-segment_list = []
-
-# For each diatrend subject, process the data and segment it
-for j in glob.glob('../../../data/Diatrend/diatrend_subset/*.csv'):
-    filename = os.path.basename(j)
-    file_number = int(filename.split('Subject')[-1].split('.')[0])  
-    
-    # Exclude files within the range 0 to 248
-    if bot_range <= file_number <= top_range:
-        pass
-    else: 
-        print("Processing train file ", filename, flush=True)
-        segments = get_gdata(j)
-        segment_list.append(segments)
-
-# merge the list so that it's one list of dictionaries
-merged_segments = {}
-for segment in segment_list:
-    for key, value in segment.items():
-        merged_segments[key] = value
-        
-# prepare the dataset. features_list contains the input features and raw_glu_list will contain the target glucose values
-features_list, raw_glu_list = prepare_dataset(merged_segments, ph, history_len)
-print(f"running with {history_len} as the history and {ph} as the prediction horizon and {fold} is the fold number", flush = True)
-
-features_array = np.array(features_list)
-labels_array = np.array(raw_glu_list)
-
-# Step 1: Split into 80% train+val and 20% test
-X_train, X_val, y_train, y_val = train_test_split(features_array, labels_array,
-                                                  test_size=0.2, shuffle=False)
-
-# Step 2: Split the 80% into 70% train and 10% val (0.7/0.8 = 0.875)
-X_train = torch.tensor(X_train, dtype=torch.float32)
-y_train = torch.tensor(y_train, dtype=torch.float32)
-X_val = torch.tensor(X_val, dtype=torch.float32)
-y_val = torch.tensor(y_val, dtype=torch.float32)
-
-
-# Create DataLoaders
-train_dataset = TensorDataset(X_train, y_train)
-train_loader = DataLoader(train_dataset, 
-                          batch_size=batch_size, shuffle=False, 
-                          pin_memory=True, num_workers=4)
-
-
-val_dataset = TensorDataset(X_val, y_val)
-val_loader = DataLoader(val_dataset, 
-                        batch_size=128, shuffle=False)
-
-print("Dataset's created", flush = True)
-
-# Training the model 
-for epoch in range(num_epochs):
-    model.train()
-    
-    for inputs, targets in train_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        
-        # Forward pass
-        outputs = model(inputs)
-        outputs = outputs.squeeze()
-        loss = criterion(outputs, targets)
-        
-        # Backward and optimize
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    
-    print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {loss.item():.4f}', flush = True)
-
-
-    # Evaluate on validation set
-    model.eval()
-    with torch.no_grad():
-        total_loss = 0
-        for inputs, targets in val_loader:
-            inputs, targets = inputs.to(device), targets.to(device)
-            outputs = model(inputs)
-            outputs = outputs.squeeze()
-            loss = criterion(outputs, targets.float())
-            total_loss += loss.item()
-        
-        avg_loss = total_loss / len(val_loader)
-        print(f'Test Loss: {avg_loss:.4f}')
-
-model.eval()
-predictions = []
-actuals = []
-with torch.no_grad():
-    for inputs, targets in val_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        outputs = model(inputs)
-        predictions.append(outputs)
-        actuals.append(targets)
-
-predictions = torch.cat(predictions).cpu().numpy()
-actuals = torch.cat(actuals).cpu().numpy()
-
-
-rmse = np.sqrt(mean_squared_error(actuals,predictions))
-print(f'RMSE on validation set: {rmse}', flush = True)
-
-# Save the model
-print(f"saved in outputs/Diatrend/models/{fold}_{ph}_Diatrend_model.pth", flush = True)
-
-torch.save(model.state_dict(), f'../outputs/Diatrend/models/{fold}_{history_len}_Diatrend_model.pth')
-
-##############################################################################
-#
-#                                TESTING
-#
-##############################################################################
 
 def get_test_rmse(model, test_loader):
     """
@@ -439,39 +282,206 @@ def get_test_rmse(model, test_loader):
     print(f'RMSE on the folds: {rmse}')
     return rmse
 
+##############################################################################
+#                     
+#
+#                                 TRAINING 
+#
+#
+##############################################################################
 
-segment_list = [] 
-test_segment_list = []
-new_test_rmse_list = []
 
-# Test the model on the test set. Same as above but now we are using the test set
-for j in glob.glob('../../../../data/Diatrend/diatrend_subset/*.csv'):
-    filename = os.path.basename(j)
-    file_number = int(filename.split('Subject')[-1].split('.')[0]) 
-    
-    # Exclude files within the range 0 to 248
-    if bot_range <= file_number <= top_range:
-        print("Processing test file ", filename, flush=True)
+def main():
+# HYPERPARAMETERS
+# Check if the GPU is available
+
+
+    input_size = 1
+    hidden_size = 128
+    num_layers = 2  
+    output_size = 1 
+    dropout_prob = 0.2  
+    ph = 6
+    num_epochs =100
+    batch_size = 128
+
+
+    # input_size, hidden_size, num_layers, output_size, dropout_prob
+    model = StackedLSTM(input_size, hidden_size, num_layers, output_size, dropout_prob) 
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.00005)
+
+    # This is to split the data into 5 folds for cross-validation
+    splits = [0, 11, 22, 33, 44, 54]
+
+    print("splits are ", splits, flush = True)
+
+    # Ensures that a fold is provided as a command line argument, if not, it defaults to fold 1
+    if len(sys.argv) > 2: 
+        fold = sys.argv[1]
+        bot_range = splits[int(fold) -1]
+        top_range = splits[int(fold)]
+        history_len = int(sys.argv[2])
+    else: 
+        print ("DEFAULTING TO FOLD 1")
+        fold = 1
+        bot_range = splits[0]
+        top_range = splits[1]
+        history_len = 6
+
+    segment_list = []
+
+    # For each diatrend subject, process the data and segment it
+    for j in glob.glob('../../../data/Diatrend/diatrend_subset/*.csv'):
+        filename = os.path.basename(j)
+        file_number = int(filename.split('Subject')[-1].split('.')[0])  
         
-        # Get the segments for the test set
-        test_segments = get_gdata(j)
-        test_features, test_glu = prepare_dataset(test_segments, ph, history_len)
-        test_features_array = np.array(test_features)
-        test_labels_array = np.array(test_glu)
+        # Exclude files within the range 0 to 248
+        if bot_range <= file_number <= top_range:
+            pass
+        else: 
+            print("Processing train file ", filename, flush=True)
+            segments = get_gdata(j)
+            segment_list.append(segments)
 
-        X_test = test_features_array
-        y_test = test_labels_array
+    # merge the list so that it's one list of dictionaries
+    merged_segments = {}
+    for segment in segment_list:
+        for key, value in segment.items():
+            merged_segments[key] = value
+            
+    # prepare the dataset. features_list contains the input features and raw_glu_list will contain the target glucose values
+    features_list, raw_glu_list = prepare_dataset(merged_segments, ph, history_len)
+    print(f"running with {history_len} as the history and {ph} as the prediction horizon and {fold} is the fold number", flush = True)
 
-        # Assuming features_list and raw_glu_list are already defined
-        X_test = torch.tensor(X_test, dtype=torch.float32)
-        y_test = torch.tensor(y_test, dtype=torch.float32)
+    features_array = np.array(features_list)
+    labels_array = np.array(raw_glu_list)
 
-        test_dataset = TensorDataset(X_test, y_test)
-        test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+    # Step 1: Split into 80% train+val and 20% test
+    X_train, X_val, y_train, y_val = train_test_split(features_array, labels_array,
+                                                    test_size=0.2, shuffle=False)
+
+    # Step 2: Split the 80% into 70% train and 10% val (0.7/0.8 = 0.875)
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    y_train = torch.tensor(y_train, dtype=torch.float32)
+    X_val = torch.tensor(X_val, dtype=torch.float32)
+    y_val = torch.tensor(y_val, dtype=torch.float32)
+
+
+    # Create DataLoaders
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, 
+                            batch_size=batch_size, shuffle=False, 
+                            pin_memory=True, num_workers=4)
+
+
+    val_dataset = TensorDataset(X_val, y_val)
+    val_loader = DataLoader(val_dataset, 
+                            batch_size=128, shuffle=False)
+
+    print("Dataset's created", flush = True)
+
+    # Training the model 
+    for epoch in range(num_epochs):
+        model.train()
         
-        new_test_rmse_list.append([filename.split('.')[0], get_test_rmse(model, test_loader)])
+        for inputs, targets in train_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            
+            # Forward pass
+            outputs = model(inputs)
+            outputs = outputs.squeeze()
+            loss = criterion(outputs, targets)
+            
+            # Backward and optimize
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
+        print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {loss.item():.4f}', flush = True)
 
-# Convert the list of RMSE values to a DataFrame and save it as a CSV file
-df = pd.DataFrame(new_test_rmse_list, columns = ['rmse', 'filenumber']).to_csv(f'../outputs/Diatrend/outputs/Diatrend_{fold}_{history_len}_rmse.csv', index = False)
+
+        # Evaluate on validation set
+        model.eval()
+        with torch.no_grad():
+            total_loss = 0
+            for inputs, targets in val_loader:
+                inputs, targets = inputs.to(device), targets.to(device)
+                outputs = model(inputs)
+                outputs = outputs.squeeze()
+                loss = criterion(outputs, targets.float())
+                total_loss += loss.item()
+            
+            avg_loss = total_loss / len(val_loader)
+            print(f'Test Loss: {avg_loss:.4f}')
+
+    model.eval()
+    predictions = []
+    actuals = []
+    with torch.no_grad():
+        for inputs, targets in val_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = model(inputs)
+            predictions.append(outputs)
+            actuals.append(targets)
+
+    predictions = torch.cat(predictions).cpu().numpy()
+    actuals = torch.cat(actuals).cpu().numpy()
 
 
+    rmse = np.sqrt(mean_squared_error(actuals,predictions))
+    print(f'RMSE on validation set: {rmse}', flush = True)
+
+    # Save the model
+    print(f"saved in outputs/Diatrend/models/{fold}_{ph}_Diatrend_model.pth", flush = True)
+
+    torch.save(model.state_dict(), f'../outputs/Diatrend/models/{fold}_{history_len}_Diatrend_model.pth')
+
+##############################################################################
+#
+#                                TESTING
+#
+##############################################################################
+
+
+
+    segment_list = [] 
+    test_segment_list = []
+    new_test_rmse_list = []
+
+    # Test the model on the test set. Same as above but now we are using the test set
+    for j in glob.glob('../../../../data/Diatrend/diatrend_subset/*.csv'):
+        filename = os.path.basename(j)
+        file_number = int(filename.split('Subject')[-1].split('.')[0]) 
+        
+        # Exclude files within the range 0 to 248
+        if bot_range <= file_number <= top_range:
+            print("Processing test file ", filename, flush=True)
+            
+            # Get the segments for the test set
+            test_segments = get_gdata(j)
+            test_features, test_glu = prepare_dataset(test_segments, ph, history_len)
+            test_features_array = np.array(test_features)
+            test_labels_array = np.array(test_glu)
+
+            X_test = test_features_array
+            y_test = test_labels_array
+
+            # Assuming features_list and raw_glu_list are already defined
+            X_test = torch.tensor(X_test, dtype=torch.float32)
+            y_test = torch.tensor(y_test, dtype=torch.float32)
+
+            test_dataset = TensorDataset(X_test, y_test)
+            test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+            
+            new_test_rmse_list.append([filename.split('.')[0], get_test_rmse(model, test_loader)])
+
+    # Convert the list of RMSE values to a DataFrame and save it as a CSV file
+    df = pd.DataFrame(new_test_rmse_list, columns = ['rmse', 'filenumber']).to_csv(f'../outputs/Diatrend/outputs/Diatrend_{fold}_{history_len}_rmse.csv', index = False)
+
+
+
+
+if __name__ == "__main__":
+    # This is the main entry point of the script
+    main()

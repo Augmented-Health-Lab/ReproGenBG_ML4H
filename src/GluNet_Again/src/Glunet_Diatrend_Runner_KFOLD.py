@@ -28,8 +28,6 @@ ph = 6
 fold = sys.argv[1]
 history_len = sys.argv[2]
 
-# %%
-
 def preprocess_DiaTrend(path, round=False):
     subject = pd.read_csv(path)
     subject['date'] = pd.to_datetime(subject['date'], errors='coerce')  # Convert 'date' column to datetime if not already

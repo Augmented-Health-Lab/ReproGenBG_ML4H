@@ -266,145 +266,6 @@ def get_gdata(filename):
     segments = segement_data_as_6_min(glucose_df, file_number)
 
     return segments
-##############################################################################
-#                     
-#
-#                                 TRAINING 
-#
-#
-##############################################################################
-
-input_size = 1
-hidden_size = 128  
-num_layers = 2  
-output_size = 1  
-dropout_prob = 0.2  
-ph = 6
-num_epochs =100
-batch_size = 128
-
-splits = [0, 248, 1201, 1348, 1459, 1726]
-
-# if the name of the file is between 0 and 248, don't include it in the training set
-if len(sys.argv) > 2: 
-    fold = sys.argv[1]
-    bot_range = splits[int(fold) -1]
-    top_range = splits[int(fold)]
-    history_len = int(sys.argv[2])
-else: 
-    fold = 1
-    bot_range = 0
-    top_range = 248
-
-segment_list = [] 
-test_segment_list = []
-
-for j in glob.glob('../../../../data/T1DEXI/T1DEXI_processed/*.csv'):
-    # don't use overlap
-    filename = os.path.basename(j)
-    file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
-    # Exclude files within the range 0 to 248
-    if bot_range <= file_number <= top_range:
-        continue
-    else: 
-        print("Processing train file ", filename, flush=True)
-        segments = get_gdata(j)
-        segment_list.append(segments)
-
-# merge the list so that it's one list of dictionaries
-merged_segments = {}
-for segment in segment_list:
-    for key, value in segment.items():
-        merged_segments[key] = value
-
-
-features_list, raw_glu_list = prepare_dataset(merged_segments, ph, history_len)
-print(len(features_list), flush = True)
-# Assuming features_list and raw_glu_list are already defined
-features_array = np.array(features_list)
-labels_array = np.array(raw_glu_list)
-
-# Step 1: Split into 80% train+val and 20% test
-X_train, X_val, y_train, y_val = train_test_split(features_array, labels_array, test_size=0.2, shuffle=False)
-
-# Step 2: Split the 80% into 70% train and 10% val (0.7/0.8 = 0.875)
-
-
-# Convert the splits to torch tensors
-X_train = torch.tensor(X_train, dtype=torch.float32)
-y_train = torch.tensor(y_train, dtype=torch.float32)
-X_val = torch.tensor(X_val, dtype=torch.float32)
-y_val = torch.tensor(y_val, dtype=torch.float32)
-# Create DataLoaders
-train_dataset = TensorDataset(X_train, y_train)
-train_loader = DataLoader(train_dataset, batch_size= batch_size, shuffle=False)
-
-val_dataset = TensorDataset(X_val, y_val)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-# %%
-
-
-model = StackedLSTM(input_size, hidden_size, num_layers, output_size, dropout_prob) # input_size, hidden_size, num_layers, output_size, dropout_prob
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.00005)
-
-for epoch in range(num_epochs):
-    model.train()
-    
-    for inputs, targets in train_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        
-        # make inputs and targets same size
-        targets = targets.view(-1, 1)
-        # Forward pass
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
-        
-        # Backward and optimize
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    
-    print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {loss.item():.4f}', flush=True)
-
-
-    model.eval()
-    with torch.no_grad():
-        total_loss = 0
-        for inputs, targets in val_loader:
-            inputs, targets = inputs.to(device), targets.to(device)
-            outputs = model(inputs)
-            outputs = outputs.squeeze(1)
-
-            loss = criterion(outputs, targets.float())
-            total_loss += loss.item()
-        
-        avg_loss = total_loss / len(val_loader)
-        print(f'Test Loss: {avg_loss:.4f}')
-
-model.eval()
-predictions = []
-actuals = []
-with torch.no_grad():
-    for inputs, targets in val_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        outputs = model(inputs)
-        predictions.append(outputs)
-        actuals.append(targets)
-
-predictions = torch.cat(predictions).cpu().numpy()
-actuals = torch.cat(actuals).cpu().numpy()
-
-
-rmse = np.sqrt(mean_squared_error(actuals,predictions))
-print(f'RMSE on validation set: {rmse}')
-
-# save the model c
-torch.save(model.state_dict(), f'../outputs/T1DEXI/models/Stacked_T1DEXI_{fold}_{history_len}_model.pth')
-
-########################
-# TEST THE MODEL
-########################
 
 def get_test_rmse(model, test_loader):
     model.eval()
@@ -425,34 +286,174 @@ def get_test_rmse(model, test_loader):
     print(f'RMSE on the folds: {rmse}')
     return  rmse
 
+##############################################################################
+#                     
+#
+#                                 TRAINING 
+#
+#
+##############################################################################
 
-segment_list = [] 
-test_segment_list = []
-new_test_rmse_list = []
+def main(): 
+    input_size = 1
+    hidden_size = 128  
+    num_layers = 2  
+    output_size = 1  
+    dropout_prob = 0.2  
+    ph = 6
+    num_epochs =100
+    batch_size = 128
 
-for j in glob.glob('../../../../data/T1DEXI/*.csv'):
-    # don't use overlap
-    filename = os.path.basename(j)
-    file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
-    # Exclude files within the range 0 to 248
-    if bot_range <= file_number <= top_range:
-        print("Processing test file ", filename, flush=True)
-        test_segments = get_gdata(j)
-        test_features, test_glu = prepare_dataset(test_segments, ph, history_len)
-        test_features_array = np.array(test_features)
-        test_labels_array = np.array(test_glu)
+    splits = [0, 248, 1201, 1348, 1459, 1726]
 
-        X_test = test_features_array
-        y_test = test_labels_array
+    # if the name of the file is between 0 and 248, don't include it in the training set
+    if len(sys.argv) > 2: 
+        fold = sys.argv[1]
+        bot_range = splits[int(fold) -1]
+        top_range = splits[int(fold)]
+        history_len = int(sys.argv[2])
+    else: 
+        fold = 1
+        bot_range = 0
+        top_range = 248
 
-        # Assuming features_list and raw_glu_list are already defined
-        X_test = torch.tensor(X_test, dtype=torch.float32)
-        y_test = torch.tensor(y_test, dtype=torch.float32)
+    segment_list = [] 
+    test_segment_list = []
 
-        test_dataset = TensorDataset(X_test, y_test)
-        test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-        new_test_rmse_list.append([filename.split('.')[0], get_test_rmse(model, test_loader)])
+    for j in glob.glob('../../../../data/T1DEXI/T1DEXI_processed/*.csv'):
+        # don't use overlap
+        filename = os.path.basename(j)
+        file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
+        # Exclude files within the range 0 to 248
+        if bot_range <= file_number <= top_range:
+            continue
+        else: 
+            print("Processing train file ", filename, flush=True)
+            segments = get_gdata(j)
+            segment_list.append(segments)
 
-df = pd.DataFrame(new_test_rmse_list, columns = ['rmse', 'filenumber']).to_csv(f'Stacked_T1DEXI_{fold}_{history_len}_rmse.csv', index = False)
+    # merge the list so that it's one list of dictionaries
+    merged_segments = {}
+    for segment in segment_list:
+        for key, value in segment.items():
+            merged_segments[key] = value
 
 
+    features_list, raw_glu_list = prepare_dataset(merged_segments, ph, history_len)
+    print(len(features_list), flush = True)
+    # Assuming features_list and raw_glu_list are already defined
+    features_array = np.array(features_list)
+    labels_array = np.array(raw_glu_list)
+
+    # Step 1: Split into 80% train+val and 20% test
+    X_train, X_val, y_train, y_val = train_test_split(features_array, labels_array, test_size=0.2, shuffle=False)
+
+
+    # Convert the splits to torch tensors
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    y_train = torch.tensor(y_train, dtype=torch.float32)
+    X_val = torch.tensor(X_val, dtype=torch.float32)
+    y_val = torch.tensor(y_val, dtype=torch.float32)
+    # Create DataLoaders
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size= batch_size, shuffle=False)
+
+    val_dataset = TensorDataset(X_val, y_val)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+
+
+    model = StackedLSTM(input_size, hidden_size, num_layers, output_size, dropout_prob) # input_size, hidden_size, num_layers, output_size, dropout_prob
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.00005)
+
+    for epoch in range(num_epochs):
+        model.train()
+        
+        for inputs, targets in train_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            
+            # make inputs and targets same size
+            targets = targets.view(-1, 1)
+            # Forward pass
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+            
+            # Backward and optimize
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
+        print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {loss.item():.4f}', flush=True)
+
+
+        model.eval()
+        with torch.no_grad():
+            total_loss = 0
+            for inputs, targets in val_loader:
+                inputs, targets = inputs.to(device), targets.to(device)
+                outputs = model(inputs)
+                outputs = outputs.squeeze(1)
+
+                loss = criterion(outputs, targets.float())
+                total_loss += loss.item()
+            
+            avg_loss = total_loss / len(val_loader)
+            print(f'Test Loss: {avg_loss:.4f}')
+
+    model.eval()
+    predictions = []
+    actuals = []
+    with torch.no_grad():
+        for inputs, targets in val_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = model(inputs)
+            predictions.append(outputs)
+            actuals.append(targets)
+
+    predictions = torch.cat(predictions).cpu().numpy()
+    actuals = torch.cat(actuals).cpu().numpy()
+
+
+    rmse = np.sqrt(mean_squared_error(actuals,predictions))
+    print(f'RMSE on validation set: {rmse}')
+
+    # save the model c
+    torch.save(model.state_dict(), f'../outputs/T1DEXI/models/Stacked_T1DEXI_{fold}_{history_len}_model.pth')
+
+    ########################
+    # TEST THE MODEL
+    ########################
+
+
+
+    segment_list = [] 
+    test_segment_list = []
+    new_test_rmse_list = []
+
+    for j in glob.glob('../../../../data/T1DEXI/*.csv'):
+        # don't use overlap
+        filename = os.path.basename(j)
+        file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
+        # Exclude files within the range 0 to 248
+        if bot_range <= file_number <= top_range:
+            print("Processing test file ", filename, flush=True)
+            test_segments = get_gdata(j)
+            test_features, test_glu = prepare_dataset(test_segments, ph, history_len)
+            test_features_array = np.array(test_features)
+            test_labels_array = np.array(test_glu)
+
+            X_test = test_features_array
+            y_test = test_labels_array
+
+            # Assuming features_list and raw_glu_list are already defined
+            X_test = torch.tensor(X_test, dtype=torch.float32)
+            y_test = torch.tensor(y_test, dtype=torch.float32)
+
+            test_dataset = TensorDataset(X_test, y_test)
+            test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+            new_test_rmse_list.append([filename.split('.')[0], get_test_rmse(model, test_loader)])
+
+    df = pd.DataFrame(new_test_rmse_list, columns = ['rmse', 'filenumber']).to_csv(f'Stacked_T1DEXI_{fold}_{history_len}_rmse.csv', index = False)
+
+if __name__ == "__main__":
+    main()

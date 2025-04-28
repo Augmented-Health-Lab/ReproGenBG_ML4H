@@ -165,121 +165,149 @@ class StackedLSTM(nn.Module):
 #
 ##############################################################################
 
+def main(): 
 # HYPERPARAMETERS
-input_size = 1 # Number of input features (Only using CGM values for now)
-hidden_size = 128  # Hidden vector size
-num_layers = 2  # Number of LSTM layers
-output_size = 1  # Single output
-dropout_prob = 0.2  # Dropout probability
-ph = 6
-history = int(sys.argv[1])
-folder_dir = os.getcwd()
+    input_size = 1 # Number of input features (Only using CGM values for now)
+    hidden_size = 128  # Hidden vector size
+    num_layers = 2  # Number of LSTM layers
+    output_size = 1  # Single output
+    dropout_prob = 0.2  # Dropout probability
+    ph = 6
+    history = int(sys.argv[1])
+    folder_dir = os.getcwd()
 
-# The input training file
-training_filename = "../StackedLSTM_again/processed_data/BIG_training_onlyCGM.pkl"
-model_save_name = 'Ohio_HISTORY_{history}.pth'.format(history=history)
-results_save_name = 'Ohio_HISTORY_{history}.csv'.format(history=history)
+    # The input training file
+    training_filename = "../processed_data/BIG_training_onlyCGM.pkl"
+    model_save_name = 'Ohio_HISTORY_{history}.pth'.format(history=history)
+    results_save_name = 'Ohio_HISTORY_{history}.csv'.format(history=history)
 
-model_save_path = os.path.join(folder_dir, model_save_name)
-results_save_path = os.path.join(folder_dir, results_save_name)
+    model_save_path = os.path.join(folder_dir, model_save_name)
+    results_save_path = os.path.join(folder_dir, results_save_name)
 
-print(f'Model name: {model_save_path}', flush=True)
-print(f'Results name: {results_save_path}', flush=True)
+    print(f'Model name: {model_save_path}', flush=True)
+    print(f'Results name: {results_save_path}', flush=True)
 
-# Load the Processed training data 
-with open(training_filename, 'rb') as f:
-    loaded_df_dict = pickle.load(f)
+    # Load the Processed training data 
+    with open(training_filename, 'rb') as f:
+        loaded_df_dict = pickle.load(f)
 
-step_updated_segments = loaded_df_dict
-features_list, labels_list, raw_glu_list = prepare_dataset(step_updated_segments, ph, history, input_size) 
+    step_updated_segments = loaded_df_dict
+    features_list, labels_list, raw_glu_list = prepare_dataset(step_updated_segments, ph, history, input_size) 
 
-# Build training and validation loader
-features_array = np.array(features_list)
-labels_array = np.array(raw_glu_list) 
+    # Build training and validation loader
+    features_array = np.array(features_list)
+    labels_array = np.array(raw_glu_list) 
 
-X_train, X_val, y_train, y_val = train_test_split(features_array, labels_array, test_size=0.2, shuffle= False)
+    X_train, X_val, y_train, y_val = train_test_split(features_array, labels_array, test_size=0.2, shuffle= False)
 
-X_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-y_train = torch.tensor(y_train, dtype=torch.float32).to(device)
-X_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-y_val = torch.tensor(y_val, dtype=torch.float32).to(device)
+    X_train = torch.tensor(X_train, dtype=torch.float32).to(device)
+    y_train = torch.tensor(y_train, dtype=torch.float32).to(device)
+    X_val = torch.tensor(X_val, dtype=torch.float32).to(device)
+    y_val = torch.tensor(y_val, dtype=torch.float32).to(device)
 
-# Build the Tensor Dataset
-train_dataset = TensorDataset(X_train, y_train)
-train_loader = DataLoader(train_dataset, batch_size=128, shuffle=False)
-val_dataset = TensorDataset(X_val, y_val)
-val_loader = DataLoader(val_dataset, batch_size=128, shuffle=False)
+    # Build the Tensor Dataset
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=False)
+    val_dataset = TensorDataset(X_val, y_val)
+    val_loader = DataLoader(val_dataset, batch_size=128, shuffle=False)
 
-model = StackedLSTM(input_size, hidden_size, num_layers, output_size, dropout_prob) # input_size, hidden_size, num_layers, output_size, dropout_prob
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=0.00005)
+    model = StackedLSTM(input_size, hidden_size, num_layers, output_size, dropout_prob) # input_size, hidden_size, num_layers, output_size, dropout_prob
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.00005)
 
-num_epochs =100
-for epoch in range(num_epochs):
-    model.train()
-    
-    for inputs, targets in train_loader:
-        inputs, targets = inputs.to(device), targets.to(device)        
-        # Forward pass
-        outputs = model(inputs)
-        outputs = outputs.squeeze()
-        loss = criterion(outputs, targets)
+    num_epochs =100
+    for epoch in range(num_epochs):
+        model.train()
         
-        # Backward and optimize
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        for inputs, targets in train_loader:
+            inputs, targets = inputs.to(device), targets.to(device)        
+            # Forward pass
+            outputs = model(inputs)
+            outputs = outputs.squeeze()
+            loss = criterion(outputs, targets)
+            
+            # Backward and optimize
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
+        print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {loss.item():.4f}', flush=True)
+
+
+        model.eval()
+        with torch.no_grad():
+            total_loss = 0
+            for inputs, targets in val_loader:
+                inputs, targets = inputs.to(device), targets.to(device)
+                outputs = model(inputs)
+                outputs = outputs.squeeze()
+                loss = criterion(outputs, targets.float())
+                total_loss += loss.item()
+            
+            avg_loss = total_loss / len(val_loader)
+            print(f'Test Loss: {avg_loss:.4f}', flush= True)
+
+    #  save the model 
+    current = os.getcwd()
+    model_save_path = os.path.join(current, model_save_name)
+    torch.save(model.state_dict(), model_save_path)
+    print(f'Model saved to {model_save_path}', flush=True)
     
-    print(f'Epoch [{epoch+1}/{num_epochs}], Training Loss: {loss.item():.4f}', flush=True)
-
-
     model.eval()
+    predictions = []
+    actuals = []
     with torch.no_grad():
-        total_loss = 0
         for inputs, targets in val_loader:
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = model(inputs)
-            outputs = outputs.squeeze()
-            loss = criterion(outputs, targets.float())
-            total_loss += loss.item()
+            predictions.append(outputs)
+            actuals.append(targets)
+
+    predictions = torch.cat(predictions).cpu().numpy()
+    actuals = torch.cat(actuals).cpu().numpy()
+
+    rmse = mean_squared_error(actuals,predictions)
+    print(f'RMSE on validation set: {np.sqrt(rmse)}')
+
+    plt.plot(predictions[:700], label = 'predictions')
+    plt.plot(actuals[:700], label = 'actuals')
+    plt.legend()
+
+    # Next we test on the test set
+    ##############################################################################
+    #
+    #                                TESTING
+    #
+    ##############################################################################
+
+    preds = []
+    trues = []
+    errors = []
+    fname = []
+
+    # Test the model for each subject individually. 
+    for file in glob.glob("../../../data/OhioT1DM/2018/test/*test.pkl"):
         
-        avg_loss = total_loss / len(val_loader)
-        print(f'Test Loss: {avg_loss:.4f}', flush= True)
+        # just use the first 3 letters of the file name which corresponds to the subject ID
+        test_filename = file.split('/')[-1][:3]
+        print(file, flush=True)
+        with open(file, 'rb') as f:
+            test_loaded_df_dict = pickle.load(f)
 
-#  save the model 
-current = os.getcwd()
-model_save_path = os.path.join(current, model_save_name)
-torch.save(model.state_dict(), model_save_path)
-print(f'Model saved to {model_save_path}', flush=True)
+        print(f'Loaded test data for subject: {test_filename}', flush=True)
 
-##############################################################################
-#
-#                                TESTING
-#
-##############################################################################
+        # Verify the content
+        test_step_updated_segments = test_loaded_df_dict
+        pred, true, rmse = test_model(model, test_step_updated_segments, ph, history, input_size)
+        preds.append(pred)
+        trues.append(true)
+        errors.append(rmse)
+        print(f'RMSE on {test_filename}: {rmse}', flush=True)
+        fname.append(test_filename)
 
-# First we test on the validation set
-model.eval()
-predictions = []
-actuals = []
-with torch.no_grad():
-    for inputs, targets in val_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        outputs = model(inputs)
-        predictions.append(outputs)
-        actuals.append(targets)
-
-predictions = torch.cat(predictions).cpu().numpy()
-actuals = torch.cat(actuals).cpu().numpy()
-
-rmse = mean_squared_error(actuals,predictions)
-print(f'RMSE on validation set: {np.sqrt(rmse)}')
-
-plt.plot(predictions[:700], label = 'predictions')
-plt.plot(actuals[:700], label = 'actuals')
-plt.legend()
-
-# Next we test on the test set
+    # Export data to a csv file 
+    curr_dat = pd.DataFrame({'fname': fname, 'rmse': errors})
+    curr_dat.to_csv(results_save_path, index=False)
 
 def test_model(model, test_step_updated_segments, ph, history, input_size):
     """
@@ -333,32 +361,6 @@ def test_model(model, test_step_updated_segments, ph, history, input_size):
     return predictions, actuals, rmse
 
 
-preds = []
-trues = []
-errors = []
-fname = []
-
-# Test the model for each subject individually. 
-for file in glob.glob("../../../data/OhioT1DM/2018/test/*test.pkl"):
-    
-    # just use the first 3 letters of the file name which corresponds to the subject ID
-    test_filename = file.split('/')[-1][:3]
-    print(file, flush=True)
-    with open(file, 'rb') as f:
-        test_loaded_df_dict = pickle.load(f)
-
-    print(f'Loaded test data for subject: {test_filename}', flush=True)
-
-    # Verify the content
-    test_step_updated_segments = test_loaded_df_dict
-    pred, true, rmse = test_model(model, test_step_updated_segments, ph, history, input_size)
-    preds.append(pred)
-    trues.append(true)
-    errors.append(rmse)
-    print(f'RMSE on {test_filename}: {rmse}', flush=True)
-    fname.append(test_filename)
-
-# Export data to a csv file 
-curr_dat = pd.DataFrame({'fname': fname, 'rmse': errors})
-curr_dat.to_csv(results_save_path, index=False)
- 
+# First we test on the validation set
+if __name__ == "__main__":
+    main()
