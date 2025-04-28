@@ -1,38 +1,44 @@
-# %% [markdown]
-# # Replicate GluNet on T1DEXI
-# 
-# GluNet was mainly reported as a personalized model
 
-# %%
 from __future__ import division, print_function
 
 import collections
 import csv
 import datetime
-import xml.etree.ElementTree as ET
 
+import os
+import sys 
+import glob
+import torch
+import torch
+
+import xml.etree.ElementTree as ET
+import matplotlib.pyplot as plt
+import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 
 from datetime import datetime, timedelta
 from scipy.interpolate import CubicSpline
-import matplotlib.pyplot as plt
-import os
-
-from datetime import datetime, timedelta
-from scipy.interpolate import CubicSpline
-import matplotlib.pyplot as plt
-import sys 
-import glob
-import torch
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
+from datetime import datetime, timedelta
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device, flush = True)
-# %%
+
+"""
+Not all functions are used in this script. They are included for completeness and can be used to replicate the original functionality of Li et Al
+For the purposes of our final model, we only need the glucose data.
+"""
+
+
 def round_up_to_nearest_five_minutes(ts):
+    """
+    Function to round up a timestamp to the nearest 5 minutes.
+    """    
+
     # Parse the timestamp
     dt = datetime.strptime(ts, "%d-%m-%Y %H:%M:%S")
     
@@ -50,6 +56,15 @@ def round_up_to_nearest_five_minutes(ts):
 
 
 def preprocess_t1dexi_cgm(path, round):
+    """Function to preprocess the CGM data from T1DEXI dataset.
+
+    Args:
+        path (str): Path to the CGM data file.
+        round (bool): Whether to round the timestamps to the nearest 5 minutes.
+
+    Returns:
+        list: A list of dictionaries containing the processed CGM data.
+    """
 
     subject = pd.read_csv(path)
     # Group by 'Category' column
@@ -79,9 +94,18 @@ def preprocess_t1dexi_cgm(path, round):
     
     return formatted_data
 
-# %%
-# %%
 def segement_data_as_6_min(data, user_id):
+    """
+    Segments the data into smaller chunks based on time differences.
+    
+    Args:
+        data (pd.DataFrame): The input DataFrame containing the data to be segmented.
+        user_id (int): The user ID for naming the segments.
+    
+    Returns:
+        dict: A dictionary where keys are segment names and values are DataFrames of the segments.
+    """
+    
     df = pd.DataFrame(data)
 
     # Calculate time differences
@@ -111,8 +135,14 @@ def segement_data_as_6_min(data, user_id):
     
     return segments
 
-# %%
 def detect_missing_and_spline_interpolate(segments):
+    """
+    Performs the spline interpolation on the segments to fill in missing data points, as mentioned
+    in Li et Al. This function was not used in the final model, but is included for completeness. 
+    Reasons for not using it are discussed in the paper.
+    """
+    
+    
     for sequence in segments:
         # sequence = "segment_3"
         detected_missing = 0
@@ -145,9 +175,16 @@ def detect_missing_and_spline_interpolate(segments):
 
     return segments
 
-# %%
-# Function to align and update segments with meal data
 def update_segments_with_meals(segments, meal_df):
+    """Function to update segments with meal information.
+
+    Args:
+        segments (dict): Dictionary of segments.
+        meal_df (pd.DataFrame): DataFrame containing meal information.
+
+    Returns:
+        dict: Updated segments with meal information.
+    """
     for segment_name, segment_df in segments.items():
         # Initialize the 'carbs' column to zeros
         segment_df['carbs'] = 0
@@ -176,9 +213,18 @@ def update_segments_with_meals(segments, meal_df):
 
     return segments
 
-# %%
-# Function to align and update segments with meal data
 def update_segments_with_basal(segments, basal_df):
+    """
+    Function to update segments with basal information.
+    
+    Args:
+        segments (dict): Dictionary of segments.
+        basal_df (pd.DataFrame): DataFrame containing basal information.
+    
+    Returns: 
+        dict: Updated segments with basal information.
+    """
+    
     for segment_name, segment_df in segments.items():
         # Initialize the 'carbs' column to zeros
         segment_df['basal_rate'] = None
@@ -193,10 +239,17 @@ def update_segments_with_basal(segments, basal_df):
 
     return segments
 
-# %%
-# Read in bolus and temp basal information
-# Need to set the 
 def preprocess_t1dexi_bolus_tempbasal(filepath, round):
+    """
+    Function to preprocess the bolus and temp basal data from T1DEXI dataset.
+    
+    Args:
+        filepath (str): Path to the bolus and temp basal data file.
+        round (bool): Whether to round the timestamps to the nearest 5 minutes.
+    
+    Return: 
+        pd.DataFrame: DataFrame containing the processed bolus data.
+    """
     subject_facm = pd.read_csv(filepath)
     # Group by 'Category' column
     grouped = subject_facm.groupby('FACAT')
@@ -211,8 +264,18 @@ def preprocess_t1dexi_bolus_tempbasal(filepath, round):
     # new_df_bolus['end_ts'] = new_df_bolus['ts_begin'].shift(-1)
     return new_df_bolus
 
-# %%
 def update_segments_with_bolus(segments, bolus_df):
+    """
+    Function to update segments with bolus information.
+    
+    Args: 
+        segments (dict): Dictionary of segments.
+        bolus_df (pd.DataFrame): DataFrame containing bolus information.
+    
+    Return: 
+        dict: Updated segments with bolus information.
+    """
+    
     for segment_name, segment_df in segments.items():
         # Initialize the 'dose' column to zeros
         segment_df['bolus_dose'] = 0
@@ -241,8 +304,11 @@ def update_segments_with_bolus(segments, bolus_df):
 
     return segments
 
-# %%
 def label_delta_transform(labels_list):
+    """
+    Function to transform labels based on their percentiles, as mentioned in Li et Al
+    """
+    
     # label_lower_percentile = -12.75
     # label_upper_percentile = 12.85
     label_lower_percentile = np.percentile(labels_list, 10)
@@ -262,6 +328,16 @@ def label_delta_transform(labels_list):
 
 def prepare_dataset(segments, history_len):
     '''
+    Function to prepare the dataset for training and testing.
+    
+    Args:
+        segments (dict): Dictionary containing segmented data.
+        history_len (int): Length of the history to consider for features.
+
+    Returns:
+        features_list (list): List of feature arrays.
+        raw_glu_list (list): List of raw glucose values.
+    
     ph = 6, 30 minutes ahead
     ph = 12, 60 minutes ahead
     '''
@@ -305,6 +381,16 @@ def prepare_dataset(segments, history_len):
     
     return features_list, raw_glu_list
 def get_gdata(filename):
+    """
+    Function to get glucose data from a file and preprocess it.
+
+    Args:
+        filename (str): Path to the file containing glucose data.
+
+    Returns:
+        segments (dict): Dictionary containing segmented glucose data.
+    """
+    
     glucose = preprocess_t1dexi_cgm(filename, False)
     glucose_dict = {entry[0]['ts']: entry[0]['value'] for entry in glucose}
 
@@ -339,212 +425,18 @@ def get_gdata(filename):
 
     return segments
 
-# %%
-splits = [0, 248, 1201, 1348, 1459, 1726]
-import sys
-
-# if the name of the file is between 0 and 248, don't include it in the training set
-if len(sys.argv) > 2: 
-    fold = sys.argv[1]
-    bot_range = splits[int(fold) -1]
-    top_range = splits[int(fold)]
-    history_len = int(sys.argv[2])
-else: 
-    fold = 1
-    bot_range = 0
-    top_range = 248
-
-segment_list = [] 
-test_segment_list = []
-
-for j in glob.glob('../T1DEXI_processed/*.csv'):
-    # don't use overlap
-    filename = os.path.basename(j)
-    file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
-    # Exclude files within the range 0 to 248
-    if bot_range < file_number <= top_range:
-        continue
-    else: 
-        print("Processing train file ", filename, flush=True)
-        segments = get_gdata(j)
-        segment_list.append(segments)
-
-# merge the list so that it's one list of dictionaries
-merged_segments = {}
-for segment in segment_list:
-    for key, value in segment.items():
-        merged_segments[key] = value
-
-
-# %%
-# Build the dilate CNN
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-class WaveNetBlock(nn.Module):
-    def __init__(self, in_channels, dilation):
-        super(WaveNetBlock, self).__init__()
-        self.conv1 = nn.Conv1d(in_channels, in_channels, kernel_size=2, dilation=dilation, padding=1+dilation - 2^(dilation-1))
-        self.conv2 = nn.Conv1d(in_channels, in_channels, kernel_size=2, dilation=dilation, padding=dilation)
-        self.res_conv = nn.Conv1d(in_channels, in_channels, kernel_size=1)
-        
-    def forward(self, x):
-        # print("shape of x: ", x.shape)
-        out = F.relu(self.conv1(x))
-        # print("shape of first out: ", out.shape)
-        out = F.relu(self.conv2(out))
-        # print("shape of second out: ", out.shape)
-        res = self.res_conv(x)
-        # print("shape of res: ", res.shape)
-        return out + res
-
-class WaveNet(nn.Module):
-    def __init__(self, in_channels, out_channels, num_blocks, dilations):
-        super(WaveNet, self).__init__()
-        self.initial_conv = nn.Conv1d(in_channels, 32, kernel_size=2, padding=1)
-        self.blocks = nn.ModuleList([WaveNetBlock(32, dilation) for dilation in dilations])
-        self.final_conv1 = nn.Conv1d(32, 128, kernel_size=2, padding=0)
-        self.final_conv2 = nn.Conv1d(128, 256, kernel_size=2, padding=0)
-        self.fc1 = nn.Linear(256, 128)
-        self.fc2 = nn.Linear(128, out_channels)
-        
-    def forward(self, x):
-        x = F.relu(self.initial_conv(x))
-        for block in self.blocks:
-            # print("enter the block loop")
-            x = block(x)
-        x = F.relu(self.final_conv1(x))
-        x = F.relu(self.final_conv2(x))
-        x = x[:, :, -1]  # Get the last time step
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        return x
-
-input_channels = 1  # Number of features
-output_channels = 1  # Predicting a single value (glucose level)
-num_blocks = 4  # Number of WaveNet blocks
-dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
-
-model = WaveNet(input_channels, output_channels, num_blocks, dilations)
-model = model.to(device)
-
-# Example of how to define the loss and optimizer
-criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0008)
-
-
-# %%
-# COMMENT THIS OUT 
-# error
-# subset_merged = dict(list(merged_segments.items())[0:10])
-# merged_segments = subset_merged
-
-# %% [markdown]
-# # Implementation
-
-# %%
-# get fold number and history length from sys 
-import sys
-try:
-    fold_number = int(sys.argv[1])
-    history_len = int(sys.argv[2])
-except:
-    fold_number = 1
-    history_len = 7
-    
-print(f'fold number is {fold_number} and history length is {history_len}', flush = True)
-bolus_updated_segments = merged_segments
-features_list, raw_glu_list = prepare_dataset(bolus_updated_segments, history_len)
-# Assuming features_list and raw_glu_list are already defined
-features_array = np.array(features_list)
-labels_array = np.array(raw_glu_list)
-
-# Step 1: Split into 80% train+val and 20% test
-X_train, X_val, y_train, y_val = train_test_split(features_array, labels_array, test_size=0.2, shuffle=False)
-
-
-X_train = X_train.astype(np.float32)
-y_train = y_train.astype(np.float32)
-# Convert the splits to torch tensors
-X_train = torch.tensor(X_train, dtype=torch.float32)
-y_train = torch.tensor(y_train, dtype=torch.float32)
-X_val = torch.tensor(X_val, dtype=torch.float32)
-y_val = torch.tensor(y_val, dtype=torch.float32)
-
-# optimze torch 
-torch.backends.cudnn.benchmark = True
-# Create DataLoaders
-train_dataset = TensorDataset(X_train, y_train)
-train_loader = DataLoader(train_dataset, batch_size=128, shuffle=False, pin_memory=True, num_workers=12,     persistent_workers=True, prefetch_factor=2     )
-
-val_dataset = TensorDataset(X_val, y_val)
-val_loader = DataLoader(val_dataset, batch_size=128, shuffle=False, pin_memory=True, num_workers=12,     persistent_workers=True, prefetch_factor=2)
-# %%
-
-# Training Loop
-
-# print the device being used
-print('Using device:', device, flush = True)
-num_epochs = 40
-for epoch in range(num_epochs):
-    model.train()
-    for inputs, targets in train_loader:
-        inputs = inputs.to(device)    # Move inputs to GPU
-        targets = targets.to(device)  # Move targets to GPU
-
-        optimizer.zero_grad()
-        outputs = model(inputs.permute(0, 2, 1))  # Permute to match (batch, channels, seq_len)
-        # use squeeze
-        outputs = outputs.squeeze()
-        targets = targets.squeeze()
-        loss = criterion(outputs, targets)
-        loss.backward()
-        optimizer.step()
-
-    model.eval()
-    val_loss = 0
-    with torch.no_grad():
-        for inputs, targets in val_loader:
-            inputs = inputs.to(device)    # Move inputs to GPU
-            targets = targets.to(device)  # Move targets to GPU
-
-            outputs = model(inputs.permute(0, 2, 1))  # Permute to match (batch, channels, seq_len)
-            outputs = outputs.squeeze()
-            targets = targets.squeeze()
-
-            loss = criterion(outputs, targets)
-            val_loss += loss.item() 
-    
-    print(f'Epoch {epoch+1}, Validation Loss: {val_loss / len(val_loader)}', flush=True)
-
-# %%
-model.eval()
-predictions = []
-actuals = []
-
-with torch.no_grad():
-    for inputs, targets in val_loader:
-        inputs, targets = inputs.to(device), targets.to(device)
-        outputs = model(inputs.permute(0, 2, 1))
-        predictions.append(outputs)
-        actuals.append(targets)
-
-predictions = torch.cat(predictions).cpu().numpy()
-actuals = torch.cat(actuals).cpu().numpy()
-
-
-rmse = np.sqrt(mean_squared_error(actuals,predictions))
-print(f'RMSE on validation set: {rmse}')
-
-# save the model 
-print(f'Saving in GluNet_{fold}_model_{history_len}.pth', flush = True)
-torch.save(model.state_dict(), f'GluNet_{fold}_model_{history_len}.pth')
-
-
-# ph = 6
-# history_len = 7
 def get_test_rmse(model, test_loader):
+    """
+    Function to calculate RMSE on the test set.
+    
+    Args:
+        model (nn.Module): The trained model.
+        test_loader (DataLoader): DataLoader for the test set.
+    
+    Returns:
+        float: RMSE value.
+    """
+    
     model.eval()
     predictions = []
     actuals = []
@@ -564,47 +456,302 @@ def get_test_rmse(model, test_loader):
     return  rmse
 
 
-segment_list = [] 
-test_segment_list = []
-new_test_rmse_list = []
-
-print(f'history length is {history_len}', flush = True)
-print(f'Fold number is {fold}', flush = True)
-print(f'prediction horizon is 6', flush = True)
-for j in glob.glob('../T1DEXI_processed/*.csv'):
-    # don't use overlap
-    filename = os.path.basename(j)
-    file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
-    # Exclude files within the range 0 to 248
-    if bot_range <= file_number <= top_range:
-        print("Processing test file ", filename, flush=True)
-        test_segments = get_gdata(j)
-        test_features, test_glu = prepare_dataset(test_segments, history_len=history_len)
-        test_features_array = np.array(test_features)
-        test_labels_array = np.array(test_glu)
-
-        X_test = test_features_array
-        y_test = test_labels_array
-
-        # Assuming features_list and raw_glu_list are already defined
-        X_test = torch.tensor(X_test, dtype=torch.float32)
-        y_test = torch.tensor(y_test, dtype=torch.float32)
-
-        test_dataset = TensorDataset(X_test, y_test)
-        test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False)
-        new_test_rmse_list.append([filename.split('.')[0], get_test_rmse(model, test_loader)])
-
-print('This is now placed in, ', f'Glunet_t1dex_Fold{fold}_HL{history_len}_rmse.csv')
-
-df = pd.DataFrame(new_test_rmse_list, columns = ['rmse', 'filenumber']).to_csv(f'Glunet_t1dex_Fold{fold}_HL{history_len}_rmse.csv', index = False)
-
-
-
-
-# %% [markdown]
-# # Implement on the group
-
-# %% [markdown]
-# 
+class WaveNetBlock(nn.Module):
+    """
+    Class WaveNet Block for dilated convolutions.
+    """
+    
+    def __init__(self, in_channels, dilation):
+        """
+        Initialize the WaveNet block with two dilated convolutions and a residual connection.
+        
+        Args:
+            in_channels (int): Number of input channels.
+            dilation (int): Dilation rate for the convolutions.
+        
+        Returns:
+            None
+        
+        """
+        super(WaveNetBlock, self).__init__()
+        self.conv1 = nn.Conv1d(in_channels, in_channels, kernel_size=2, dilation=dilation, padding=1+dilation - 2^(dilation-1))
+        self.conv2 = nn.Conv1d(in_channels, in_channels, kernel_size=2, dilation=dilation, padding=dilation)
+        self.res_conv = nn.Conv1d(in_channels, in_channels, kernel_size=1)
+        
+    def forward(self, x):
+        """
+        Forward pass through the WaveNet block.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, seq_len).
+        
+        Returns:
+            torch.Tensor: Output tensor of the same shape as input.
+        """
+        # print("shape of x: ", x.shape)
+        out = F.relu(self.conv1(x))
+        # print("shape of first out: ", out.shape)
+        out = F.relu(self.conv2(out))
+        # print("shape of second out: ", out.shape)
+        res = self.res_conv(x)
+        # print("shape of res: ", res.shape)
+        return out + res
 
 
+class WaveNet(nn.Module):
+    """
+    Class WaveNet for the entire model.
+    """
+    
+    def __init__(self, in_channels, out_channels, num_blocks, dilations):
+        """
+        Initialize the WaveNet model with an initial convolution, multiple blocks, and final convolutions.
+        
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            num_blocks (int): Number of WaveNet blocks.
+            dilations (list): List of dilation rates for the blocks.
+        
+        Returns:
+            None
+        """
+        
+        super(WaveNet, self).__init__()
+        self.initial_conv = nn.Conv1d(in_channels, 32, kernel_size=2, padding=1)
+        self.blocks = nn.ModuleList([WaveNetBlock(32, dilation) for dilation in dilations])
+        self.final_conv1 = nn.Conv1d(32, 128, kernel_size=2, padding=0)
+        self.final_conv2 = nn.Conv1d(128, 256, kernel_size=2, padding=0)
+        self.fc1 = nn.Linear(256, 128)
+        self.fc2 = nn.Linear(128, out_channels)
+        
+    def forward(self, x):
+        """
+        Input tensor of shape (batch_size, in_channels, seq_len).
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape (batch_size, in_channels, seq_len).
+        
+        Returns:
+            torch.Tensor: Output tensor of shape (batch_size, out_channels).
+        """
+        
+        x = F.relu(self.initial_conv(x))
+        for block in self.blocks:
+            # print("enter the block loop")
+            x = block(x)
+        x = F.relu(self.final_conv1(x))
+        x = F.relu(self.final_conv2(x))
+        x = x[:, :, -1]  # Get the last time step
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+
+def main(): 
+
+    splits = [0, 248, 1201, 1348, 1459, 1726]
+    import sys
+
+
+    ##############################################################################
+    #
+    #                                PREPROCESSING
+    #
+    ##############################################################################
+
+    # if the name of the file is between 0 and 248, don't include it in the training set
+    if len(sys.argv) > 2: 
+        fold = sys.argv[1]
+        bot_range = splits[int(fold) -1]
+        top_range = splits[int(fold)]
+        history_len = int(sys.argv[2])
+    else: 
+    # Default to first fold
+        fold = 1
+        bot_range = 0
+        top_range = 248
+
+    segment_list = [] 
+    test_segment_list = []
+
+    for j in glob.glob('../T1DEXI_processed/*.csv'):
+        # don't use overlap
+        filename = os.path.basename(j)
+        file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
+        # Exclude files within the range 0 to 248
+        if bot_range < file_number <= top_range:
+            continue
+        else: 
+            print("Processing train file ", filename, flush=True)
+            segments = get_gdata(j)
+            segment_list.append(segments)
+
+    # merge the list so that it's one list of dictionaries
+    merged_segments = {}
+    for segment in segment_list:
+        for key, value in segment.items():
+            merged_segments[key] = value
+
+
+
+    ##############################################################################
+    #
+    #                                TRAINING
+    #
+    ##############################################################################
+    
+    input_channels = 1  # Number of features
+    output_channels = 1  # Predicting a single value (glucose level)
+    num_blocks = 4  # Number of WaveNet blocks
+    dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
+    
+    model = WaveNet(input_channels, output_channels, num_blocks, dilations)
+    model = model.to(device)
+
+    # Example of how to define the loss and optimizer
+    criterion = nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0008)
+
+
+    import sys
+    try:
+        fold_number = int(sys.argv[1])
+        history_len = int(sys.argv[2])
+    except:
+        fold_number = 1
+        history_len = 7
+        
+    print(f'fold number is {fold_number} and history length is {history_len}', flush = True)
+    bolus_updated_segments = merged_segments
+    features_list, raw_glu_list = prepare_dataset(bolus_updated_segments, history_len)
+    # Assuming features_list and raw_glu_list are already defined
+    features_array = np.array(features_list)
+    labels_array = np.array(raw_glu_list)
+
+    # Step 1: Split into 80% train+val and 20% test
+    X_train, X_val, y_train, y_val = train_test_split(features_array, labels_array, test_size=0.2, shuffle=False)
+
+
+    X_train = X_train.astype(np.float32)
+    y_train = y_train.astype(np.float32)
+    # Convert the splits to torch tensors
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    y_train = torch.tensor(y_train, dtype=torch.float32)
+    X_val = torch.tensor(X_val, dtype=torch.float32)
+    y_val = torch.tensor(y_val, dtype=torch.float32)
+
+    # optimze torch 
+    torch.backends.cudnn.benchmark = True
+    # Create DataLoaders
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=False, pin_memory=True, num_workers=12,     persistent_workers=True, prefetch_factor=2     )
+
+    val_dataset = TensorDataset(X_val, y_val)
+    val_loader = DataLoader(val_dataset, batch_size=128, shuffle=False, pin_memory=True, num_workers=12,     persistent_workers=True, prefetch_factor=2)
+
+
+    # print the device being used
+    print('Using device:', device, flush = True)
+    num_epochs = 100
+    for epoch in range(num_epochs):
+        model.train()
+        for inputs, targets in train_loader:
+            inputs = inputs.to(device)    # Move inputs to GPU
+            targets = targets.to(device)  # Move targets to GPU
+
+            optimizer.zero_grad()
+            outputs = model(inputs.permute(0, 2, 1))  # Permute to match (batch, channels, seq_len)
+            # use squeeze
+            outputs = outputs.squeeze()
+            targets = targets.squeeze()
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+
+        model.eval()
+        val_loss = 0
+        with torch.no_grad():
+            for inputs, targets in val_loader:
+                inputs = inputs.to(device)    # Move inputs to GPU
+                targets = targets.to(device)  # Move targets to GPU
+
+                outputs = model(inputs.permute(0, 2, 1))  # Permute to match (batch, channels, seq_len)
+                outputs = outputs.squeeze()
+                targets = targets.squeeze()
+
+                loss = criterion(outputs, targets)
+                val_loss += loss.item() 
+        
+        print(f'Epoch {epoch+1}, Validation Loss: {val_loss / len(val_loader)}', flush=True)
+
+
+    model.eval()
+    predictions = []
+    actuals = []
+
+    with torch.no_grad():
+        for inputs, targets in val_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = model(inputs.permute(0, 2, 1))
+            predictions.append(outputs)
+            actuals.append(targets)
+
+    predictions = torch.cat(predictions).cpu().numpy()
+    actuals = torch.cat(actuals).cpu().numpy()
+
+
+    rmse = np.sqrt(mean_squared_error(actuals,predictions))
+    print(f'RMSE on validation set: {rmse}')
+
+    # save the model 
+    print(f'Saving in GluNet_{fold}_model_{history_len}.pth', flush = True)
+    torch.save(model.state_dict(), f'GluNet_{fold}_model_{history_len}.pth')
+
+
+    ##############################################################################
+    #
+    #                                TESTING
+    #
+    ##############################################################################
+
+
+    segment_list = [] 
+    test_segment_list = []
+    new_test_rmse_list = []
+
+    print(f'history length is {history_len}', flush = True)
+    print(f'Fold number is {fold}', flush = True)
+    print(f'prediction horizon is 6', flush = True)
+    for j in glob.glob('../T1DEXI_processed/*.csv'):
+        # don't use overlap
+        filename = os.path.basename(j)
+        file_number = int(filename.split('.')[0])  # Extract numeric part before '.csv'
+        
+        # Exclude files within the required ranges
+        if bot_range <= file_number <= top_range:
+            print("Processing test file ", filename, flush=True)
+            test_segments = get_gdata(j)
+            test_features, test_glu = prepare_dataset(test_segments, history_len=history_len)
+            test_features_array = np.array(test_features)
+            test_labels_array = np.array(test_glu)
+
+            X_test = test_features_array
+            y_test = test_labels_array
+
+            # Assuming features_list and raw_glu_list are already defined
+            X_test = torch.tensor(X_test, dtype=torch.float32)
+            y_test = torch.tensor(y_test, dtype=torch.float32)
+
+            test_dataset = TensorDataset(X_test, y_test)
+            test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False)
+            new_test_rmse_list.append([filename.split('.')[0], get_test_rmse(model, test_loader)])
+
+    print('This is now placed in, ', f'Glunet_t1dex_Fold{fold}_HL{history_len}_rmse.csv')
+
+    df = pd.DataFrame(new_test_rmse_list, columns = ['rmse', 'filenumber']).to_csv(f'Glunet_t1dex_Fold{fold}_HL{history_len}_rmse.csv', index = False)
+
+
+
+if main() == '__main__':
+    main()

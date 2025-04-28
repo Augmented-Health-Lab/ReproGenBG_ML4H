@@ -22,7 +22,7 @@ echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 # Arrays for folds and inputs
 folds=(1 2 3 4 5)
-inputs=(7 12 18 24)
+inputs=(12 18 24)
 
 # Loop through both folds and inputs
 for fold in "${folds[@]}"
@@ -31,6 +31,6 @@ do
   do
     # Skip the iteration where fold is 1 and input is 6
     echo "Running Python with fold: $fold and input: $input"
-    python3 ./Glunet_t1Dexi_Runner_KFOLD.py "$fold" "$input"
+    python3 ./GluNet_T1DEXI.py "$fold" "$input"
   done
 done

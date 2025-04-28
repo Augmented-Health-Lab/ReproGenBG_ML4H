@@ -94,7 +94,7 @@ def prepare_dataset(segments,history_len = 6, ph = 6):
         for i in range(max_index):
             # Extracting features from index i to i+15
             segment_df = segment_df.reset_index(drop = True)
-            features = segment_df.loc[i:i+history_len, ['glucose_value', 'carbs', 'bolus_dose']].values
+            features = segment_df.loc[i:i+history_len, ['glucose_value']].values
             # Extracting label for index i+15+ph
             # label = segment_df.loc[i+15+ph, 'glucose_value'] - segment_df.loc[i+15, 'glucose_value']
             
@@ -149,135 +149,20 @@ class WaveNet(nn.Module):
         x = self.fc2(x)
         return x
 
-
-##############################################################################
-#                     
-#
-#                                 TRAINING 
-#
-#
-##############################################################################
-
-# HYPERPARAMETERS
-file_num = 'ALL'
-HISTORY = int(sys.argv[1])
-input_channels = 3 # Number of features
-output_channels = 1  # Predicting a single value (glucose level)
-num_blocks = 4  # Number of WaveNet blocks
-dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
-
-with open(f'../data/OhioT1DM/BIG_training_onlyCGM.pkl', 'rb') as f:
-    final_updated_segments= pickle.load(f)
-        
-features_list, labels_list = prepare_dataset(final_updated_segments, history_len=HISTORY)
-features_array = np.array(features_list)
-labels_array = np.array(labels_list)
-
-# Step 1: Split into 80% train+val and 20% test
-X_temp, X_test, y_temp, y_test = train_test_split(features_array, labels_array, test_size=0.2, shuffle=False)
-
-# Step 2: Split the 80% into 70% train and 10% val (0.7/0.8 = 0.875)
-X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.125, shuffle=False)
-
-# Convert the splits to torch tensors
-X_train = torch.tensor(X_train, dtype=torch.float32)
-y_train = torch.tensor(y_train, dtype=torch.float32)
-X_val = torch.tensor(X_val, dtype=torch.float32)
-y_val = torch.tensor(y_val, dtype=torch.float32)
-X_test = torch.tensor(X_test, dtype=torch.float32)
-y_test = torch.tensor(y_test, dtype=torch.float32)
-
-# Create DataLoaders
-train_dataset = TensorDataset(X_train, y_train)
-train_loader = DataLoader(train_dataset, batch_size=128, shuffle=False)
-
-val_dataset = TensorDataset(X_val, y_val)
-val_loader = DataLoader(val_dataset, batch_size=128, shuffle=False)
-
-test_dataset = TensorDataset(X_test, y_test)
-test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False)
-
-# Convert lists to PyTorch tensors
-features_array = np.array(features_list)
-labels_array = np.array(labels_list)
-
-features_tensor = torch.tensor(features_array, dtype=torch.float32)
-labels_tensor = torch.tensor(labels_array, dtype=torch.float32).unsqueeze(1)  # Making labels tensor 2D
-
-feature_label_tensor = TensorDataset(features_tensor, labels_tensor)
-train_loader = DataLoader(feature_label_tensor, batch_size=32, shuffle=True)
-
-# Example of using DataLoader in a training loop
-for features, labels in train_loader:
-    print("Features batch shape:", features.shape)
-    print("Label batch shape:", labels.shape)
-    # Example: print(features, labels)
-    break
-
-# initialize cuda option
-dtype = torch.FloatTensor # data type
-ltype = torch.LongTensor # label type
-
-use_cuda = torch.cuda.is_available()
-if use_cuda:
-    print('use gpu')
-    dtype = torch.cuda.FloatTensor
-    ltype = torch.cuda.LongTensor
-
-# Initialize the model
-model = WaveNet(input_channels, output_channels, num_blocks, dilations)
-
-# Example of how to define the loss and optimizer
-criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0008)
-
-
-for inputs, targets in train_loader:
-    print("Input tensor shape:", inputs.shape)
-    print("Input tensor total elements:", inputs.numel())
-    print("Target tensor shape:", targets.shape)
-    print("Sequence length:", inputs.shape[1])
-    break
-
-# Perform the Training
-
-# Training Loop
-num_epochs = 100
-for epoch in range(num_epochs):
-    model.train()
-    for inputs, targets in train_loader:
-        optimizer.zero_grad()
-        outputs = model(inputs.permute(0, 2, 1))  # Permute to match (batch, channels, seq_len)
-        outputs = outputs.squeeze()  # Remove extra dimensions if present
-        targets = targets.squeeze()  # Remove extra dimensions if present
-
-        loss = criterion(outputs, targets)
-        loss.backward()
-        optimizer.step()
-
-    model.eval()
-    val_loss = 0
-    with torch.no_grad():
-        for inputs, targets in val_loader:
-            outputs = model(inputs.permute(0, 2, 1))  # Permute to match (batch, channels, seq_len)
-            outputs = outputs.squeeze()  # Remove extra dimensions if present
-            targets = targets.squeeze()  # Remove extra dimensions if present
-
-            loss = criterion(outputs, targets)
-            val_loss += loss.item()
-    
-    print(f'Epoch {epoch+1}, Validation Loss: {val_loss / len(val_loader)}', flush=True)
-
-# save model
-torch.save(model, f'./glucnet_model_OHIO_ALL_FEATURES_{file_num}_H_{HISTORY}.pth')
-
-##############################################################################
-#
-#                                TESTING
-#
-##############################################################################
-
 def prepare_dataset_test_dataset( file_dir, HISTORY = 6):
+    """
+    Function to prepare the test dataset for the model. Not all lines are used in the main pipeline.
+    But the processing for additional features like meal, basal, bolus, and temp_basal is included.
+    
+    Args:
+        file_dir (str): Path to the test data file.
+        HISTORY (int): Length of the history to consider for each prediction (in minutes).
+        
+    Returns:
+        test_loader (DataLoader): DataLoader for the test dataset.
+        
+    """
+    
         # test data
     g_data = []
 
@@ -338,55 +223,193 @@ def prepare_dataset_test_dataset( file_dir, HISTORY = 6):
 
 
 
-# # load the model 
-# input_channels = 4  # Number of features
-# output_channels = 1
-# num_blocks = 4  # Number of WaveNet blocks
-# dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
-# model = WaveNet(input_channels, output_channels, num_blocks, dilations)
-# # # PH = 12
-# # file_num = 'all'
+##############################################################################
+#                     
+#
+#                                 TRAINING 
+#
+#
+##############################################################################
 
-# # model.load_state_dict(torch.load(f'./glucnet_model_100_epoch_ph12.pth'))
+def main():
+    """
+    This is the main function that trains the processed data. It should be run
+    It should be run after running Ohio_Processing_LSTM.py in the Rabby et Al Paper
+    """    
 
-# preds = []
-# trues = []
-# errors = []
-# fname = []
+    # HYPERPARAMETERS
+    file_num = 'ALL'
+    HISTORY = int(sys.argv[1])
+    input_channels = 3 # Number of features
+    output_channels = 1  # Predicting a single value (glucose level)
+    num_blocks = 4  # Number of WaveNet blocks
+    dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
 
-# for file in glob.glob("../OhioT1DM/2018/test/*.xml"):
-#     test_filename = file
-#     # load the pkl file
-#     # with open(test_filename, 'rb') as f:
-#     #     test_segments = pickle.load(f)
-#     # test_loader = prepare_dataset(test_segments, history_len=HISTORY)
-    
-#     test_loader = prepare_dataset_test_dataset(test_filename, HISTORY)
-    
-#     # Verify the content
-#     # Calculate RMSE on test set
-#     model.eval()
-#     predictions = []
-#     actuals = []
-#     with torch.no_grad():
-#         for inputs, targets in test_loader:
-#             outputs = model(inputs.permute(0, 2, 1))
-#             predictions.append(outputs)
-#             actuals.append(targets)
+    with open(f'../data/BIG_training_onlyCGM.pkl', 'rb') as f:
+        final_updated_segments= pickle.load(f)
             
-#     predictions = torch.cat(predictions).cpu().numpy()
-#     actuals = torch.cat(actuals).cpu().numpy()
+    features_list, labels_list = prepare_dataset(final_updated_segments, history_len=HISTORY)
+    features_array = np.array(features_list)
+    labels_array = np.array(labels_list)
 
-#     rmse = np.sqrt(mean_squared_error(actuals,predictions))
-#     print(f'RMSE on test set: {rmse}')
+    # Step 1: Split into 80% train+val and 20% test
+    X_temp, X_test, y_temp, y_test = train_test_split(features_array, labels_array, test_size=0.2, shuffle=False)
+
+    # Step 2: Split the 80% into 70% train and 10% val (0.7/0.8 = 0.875)
+    X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.125, shuffle=False)
+
+    # Convert the splits to torch tensors
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    y_train = torch.tensor(y_train, dtype=torch.float32)
+    X_val = torch.tensor(X_val, dtype=torch.float32)
+    y_val = torch.tensor(y_val, dtype=torch.float32)
+    X_test = torch.tensor(X_test, dtype=torch.float32)
+    y_test = torch.tensor(y_test, dtype=torch.float32)
+
+    # Create DataLoaders
+    train_dataset = TensorDataset(X_train, y_train)
+    train_loader = DataLoader(train_dataset, batch_size=128, shuffle=False)
+
+    val_dataset = TensorDataset(X_val, y_val)
+    val_loader = DataLoader(val_dataset, batch_size=128, shuffle=False)
+
+    test_dataset = TensorDataset(X_test, y_test)
+    test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False)
+
+    # Convert lists to PyTorch tensors
+    features_array = np.array(features_list)
+    labels_array = np.array(labels_list)
+
+    features_tensor = torch.tensor(features_array, dtype=torch.float32)
+    labels_tensor = torch.tensor(labels_array, dtype=torch.float32).unsqueeze(1)  # Making labels tensor 2D
+
+    feature_label_tensor = TensorDataset(features_tensor, labels_tensor)
+    train_loader = DataLoader(feature_label_tensor, batch_size=32, shuffle=True)
+
+    # Example of using DataLoader in a training loop
+    for features, labels in train_loader:
+        print("Features batch shape:", features.shape)
+        print("Label batch shape:", labels.shape)
+        # Example: print(features, labels)
+        break
+
+    # initialize cuda option
+    dtype = torch.FloatTensor # data type
+    ltype = torch.LongTensor # label type
+
+    use_cuda = torch.cuda.is_available()
+    if use_cuda:
+        print('use gpu')
+        dtype = torch.cuda.FloatTensor
+        ltype = torch.cuda.LongTensor
+
+    # Initialize the model
+    model = WaveNet(input_channels, output_channels, num_blocks, dilations)
+
+    # Example of how to define the loss and optimizer
+    criterion = nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0008)
+
+
+    for inputs, targets in train_loader:
+        print("Input tensor shape:", inputs.shape)
+        print("Input tensor total elements:", inputs.numel())
+        print("Target tensor shape:", targets.shape)
+        print("Sequence length:", inputs.shape[1])
+        break
+
+    # Perform the Training
+
+    # Training Loop
+    num_epochs = 100
+    for epoch in range(num_epochs):
+        model.train()
+        for inputs, targets in train_loader:
+            optimizer.zero_grad()
+            outputs = model(inputs.permute(0, 2, 1))  # Permute to match (batch, channels, seq_len)
+            outputs = outputs.squeeze()  # Remove extra dimensions if present
+            targets = targets.squeeze()  # Remove extra dimensions if present
+
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+
+        model.eval()
+        val_loss = 0
+        with torch.no_grad():
+            for inputs, targets in val_loader:
+                outputs = model(inputs.permute(0, 2, 1))  # Permute to match (batch, channels, seq_len)
+                outputs = outputs.squeeze()  # Remove extra dimensions if present
+                targets = targets.squeeze()  # Remove extra dimensions if present
+
+                loss = criterion(outputs, targets)
+                val_loss += loss.item()
+        
+        print(f'Epoch {epoch+1}, Validation Loss: {val_loss / len(val_loader)}', flush=True)
+
+    # save model
+    torch.save(model, f'./glucnet_model_OHIO_ALL_FEATURES_{file_num}_H_{HISTORY}.pth')
+
+    ##############################################################################
+    #
+    #                                TESTING
+    #
+    ##############################################################################
+
+
+    # load the model 
+    input_channels = 1  # Number of features
+    output_channels = 1
+    num_blocks = 4  # Number of WaveNet blocks
+    dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
+    model = WaveNet(input_channels, output_channels, num_blocks, dilations)
+    # # PH = 12
+    # file_num = 'all'
+
+    # model.load_state_dict(torch.load(f'./glucnet_model_100_epoch_ph12.pth'))
+
+    preds = []
+    trues = []
+    errors = []
+    fname = []
+
+    for file in glob.glob("../OhioT1DM/2018/test/*.xml"):
+        test_filename = file
+        # load the pkl file
+        # with open(test_filename, 'rb') as f:
+        #     test_segments = pickle.load(f)
+        # test_loader = prepare_dataset(test_segments, history_len=HISTORY)
+        
+        test_loader = prepare_dataset_test_dataset(test_filename, HISTORY)
+        
+        # Verify the content
+        # Calculate RMSE on test set
+        model.eval()
+        predictions = []
+        actuals = []
+        with torch.no_grad():
+            for inputs, targets in test_loader:
+                outputs = model(inputs.permute(0, 2, 1))
+                predictions.append(outputs)
+                actuals.append(targets)
+                
+        predictions = torch.cat(predictions).cpu().numpy()
+        actuals = torch.cat(actuals).cpu().numpy()
+
+        rmse = np.sqrt(mean_squared_error(actuals,predictions))
+        print(f'RMSE on test set: {rmse}')
 
 
 
-#     preds.append(predictions)
-#     trues.append(actuals)
-#     errors.append(rmse)
-#     fname.append(test_filename.split('-ws')[0][-3:])
+        preds.append(predictions)
+        trues.append(actuals)
+        errors.append(rmse)
+        fname.append(test_filename.split('-ws')[0][-3:])
 
 
-# curr_dat = pd.DataFrame({'fname': fname, 'rmse': errors})
-# curr_dat.to_csv(f'wavenet_ph_{PH}_{file_num}_all_values.csv', index=False)
+    curr_dat = pd.DataFrame({'fname': fname, 'rmse': errors})
+    curr_dat.to_csv(f'wavenet_ph_{PH}_{file_num}_all_values.csv', index=False)
+
+
+if __name__ == "__main__":
+    main()

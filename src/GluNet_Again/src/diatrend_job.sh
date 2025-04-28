@@ -22,7 +22,7 @@ echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 # Arrays for folds and inputs
 folds=(1 2 3 4 5)
-inputs=(6 12 18 24)
+inputs=(12 18 24)
 
 # Loop through both folds and inputs
 for fold in "${folds[@]}"
@@ -30,6 +30,6 @@ do
   for input in "${inputs[@]}"
   do
     echo "Running Python with fold: $fold and input: $input"
-    python3 ./Glunet_Diatrend_Runner_KFOLD.py "$fold" "$input"
+    python3 ./GluNet_Diatrend.py "$fold" "$input"
   done
 done
