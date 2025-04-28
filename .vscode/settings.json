@@ -1,5 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./pytorch-wavenet/tests/test_"
-    ]
-}
