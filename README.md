@@ -19,12 +19,13 @@ The repository is organized as follows:
 - `AccurateBG/` – The implementation of Deng et al.
 - `Baseline/` – The implementation of baseline method. 
 - `dataset_preprocessing/` - Includes data preprocesssing script, subset patient id, and fold split. 
+- `GlucoseTransformer/` – The first version implementation of Lee et al. Deprecated.
 - `GlucoseTransformer_organized/` – The implementation of Lee et al.
-- `GluNet/` – The implementation of Li et al.
+- `Li_et_al_GluNet/` – The implementation of Li et al.
 - `Literature_review_summary/` - Summarize from the lierature
 - `Martinsson/` – The implementation of Martinsson et al. 
+- `Rabby_et_al_StackedLSTM/` – The implementation of Rabby et al.
 - `vanDoorn/` - The implementation of vanDoorn et al.
-- `Stacked LSTM/` – The implementation of Rabby et al.
 - `requirements.txt` – Python package dependencies
 - `README.md` – Project overview and instructions (you are here)
 
