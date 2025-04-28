@@ -571,6 +571,7 @@ def main():
         fold = 1
         bot_range = 0
         top_range = 248
+        history_len = 6
 
     segment_list = [] 
     test_segment_list = []
@@ -603,7 +604,12 @@ def main():
     
     input_channels = 1  # Number of features
     output_channels = 1  # Predicting a single value (glucose level)
-    num_blocks = 4  # Number of WaveNet blocks
+    
+    if history_len <= 6: 
+        num_blocks = 3
+    else: 
+        num_blocks = 4
+    
     dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
     
     model = WaveNet(input_channels, output_channels, num_blocks, dilations)
@@ -723,6 +729,7 @@ def main():
     print(f'history length is {history_len}', flush = True)
     print(f'Fold number is {fold}', flush = True)
     print(f'prediction horizon is 6', flush = True)
+    
     for j in glob.glob('../T1DEXI_processed/*.csv'):
         # don't use overlap
         filename = os.path.basename(j)

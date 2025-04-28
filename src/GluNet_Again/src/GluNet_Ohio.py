@@ -240,9 +240,14 @@ def main():
     # HYPERPARAMETERS
     file_num = 'ALL'
     HISTORY = int(sys.argv[1])
-    input_channels = 3 # Number of features
+    input_channels = 1 # Number of features
     output_channels = 1  # Predicting a single value (glucose level)
-    num_blocks = 4  # Number of WaveNet blocks
+    
+    if HISTORY <= 6: 
+        num_blocks = 3
+    else: 
+        num_blocks = 4  # Number of WaveNet blocks
+        
     dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
 
     with open(f'../data/BIG_training_onlyCGM.pkl', 'rb') as f:
@@ -357,13 +362,13 @@ def main():
     ##############################################################################
 
 
-    # load the model 
-    input_channels = 1  # Number of features
-    output_channels = 1
-    num_blocks = 4  # Number of WaveNet blocks
-    dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
-    model = WaveNet(input_channels, output_channels, num_blocks, dilations)
-    # # PH = 12
+    # # load the model 
+    # input_channels = 1  # Number of features
+    # output_channels = 1
+    # num_blocks = 4  # Number of WaveNet blocks
+    # dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
+    # model = WaveNet(input_channels, output_channels, num_blocks, dilations)
+    # # # PH = 12
     # file_num = 'all'
 
     # model.load_state_dict(torch.load(f'./glucnet_model_100_epoch_ph12.pth'))

@@ -368,7 +368,12 @@ def main():
 
     input_channels = 1  # Number of features
     output_channels = 1  # Predicting a single value (glucose level)
-    num_blocks = 4  # Number of WaveNet blocks
+    
+    if history_len <= 6: 
+        num_blocks = 3
+    else: 
+        num_blocks = 4  # Number of WaveNet blocks
+        
     dilations = [2**i for i in range(num_blocks)]  # Dilation rates: 1, 2, 4, 8
 
     model = WaveNet(input_channels, output_channels, num_blocks, dilations)
