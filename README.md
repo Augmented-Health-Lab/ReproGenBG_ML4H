@@ -103,7 +103,7 @@ bash ./Li_et_al_GluNet/diatrend_job.sh
 ##### T1DEXI:
 
 ```bash
-python ./Li_et_al_GluNet/t1dexi_job.sh
+bash ./Li_et_al_GluNet/t1dexi_job.sh
 ```
 
 #### 2.3 van Doorn et al., 2021 [3]
