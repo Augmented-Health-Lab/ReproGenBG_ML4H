@@ -20,10 +20,10 @@ echo "Works till here"
 echo "Running Python"
 echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
-# Arrays for folds and inputs
-inputs=(6 12 18 24)
+# Arrays for the inputs
+inputs=(12)
 
-# Loop through both folds and inputs
+# Loop through the inputs
 for input in "${inputs[@]}"
 do
   echo "Running Python with input: $input"

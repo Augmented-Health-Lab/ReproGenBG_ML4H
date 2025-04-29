@@ -22,7 +22,7 @@ echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 # Arrays for folds and inputs
 folds=(1 2 3 4 5)
-inputs=(6 12 18 24)
+inputs=(24) # as per original study
 
 # Loop through both folds and inputs
 for fold in "${folds[@]}"

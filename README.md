@@ -86,7 +86,23 @@ python ./Martinsson/t1dexi_main.py
 ```
 
 #### 2.2 Li et al., 2021 [2]
+##### OhioT1DM:
 
+```bash
+python ./Li_et_al_GluNet/Ohio_Processing_LSTM.py 
+bash ./Li_et_al_GluNet/ohio_job.sh
+```
+##### DiaTrend:
+
+```bash
+bash ./Li_et_al_GluNet/diatrend_job.sh
+```
+
+##### T1DEXI:
+
+```bash
+python ./Li_et_al_GluNet/t1dexi_job.sh
+```
 
 #### 2.3 van Doorn et al., 2021 [3]
 ##### OhioT1DM:
@@ -126,6 +142,22 @@ python ../AccurateBG/accurate_bg/t1dexi_main.py
 ```
 
 #### 2.5 Rabby et al., 2021
+##### OhioT1DM:
+```bash
+python ./Rabby_et_al_StackedLSTM/src/Ohio_Processing_LSTM.py 
+python ./Rabby_et_al_StackedLSTM/src/Ohio_Training_LSTM.py {history} # takes in the history (sampling horizon) as a system argument
+```
+##### DiaTrend:
+
+```bash
+bash ./Rabby_et_al_StackedLSTM/src/diatrend_job.sh 
+```
+
+##### T1DEXI:
+
+```bash
+bash ../AccurateBG/accurate_bg/t1dexi_main.py
+```
 
 
 
