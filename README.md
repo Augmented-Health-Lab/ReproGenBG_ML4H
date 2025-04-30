@@ -147,7 +147,7 @@ python ../AccurateBG/accurate_bg/t1dexi_main.py
 ##### OhioT1DM:
 ```bash
 python ./Rabby_et_al_StackedLSTM/src/Ohio_Processing_LSTM.py 
-python ./Rabby_et_al_StackedLSTM/src/Ohio_Training_LSTM.py {history} # takes in the history (sampling horizon) as a system argument
+bash ./Rabby_et_al_StackedLSTM/src/ohio_job.sh 
 ```
 ##### DiaTrend:
 
