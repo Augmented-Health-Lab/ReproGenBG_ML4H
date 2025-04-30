@@ -61,7 +61,7 @@ Create a folder on the same level with the pulled "ReproGenBG_ML4H" folder. Name
 
 - **OhioT1DM**: Please directly put the dataset folder into this directory: `../datasets/[OhioT1DM]`. Also copy all the xml files from folder 2018 and 2020 to another folder "both" in the same folder as 2018 and 2020. 
 - **DiaTrend**: Please following [this script](dataset_preprocessing/diatrend_preprocessing.py) for data preprocessing. And please put the generated `../datasets/diatrend_subset/fold[N]_training` and `../datasets/diatrend_subset/processed_cgm_data_Subject[N].csv`. 
-- **T1DEXI**: Please following this [subset list](dataset_preprocessing/selected_t1dexi.txt) and notebook for data preprocessing. And please put the generated `../datasets/t1dexi_subset/fold[N]_training` and `../datasets/t1dexi_subset/[N].csv`
+- **T1DEXI**: Please following this [subset list](dataset_preprocessing/selected_t1dexi.txt) and [python file](dataset_preprocessing/t1dexi_preprocessing.py) for data preprocessing. And please put the generated `../datasets/t1dexi_subset/fold[N]_training` and `../datasets/t1dexi_subset/[N].csv`
 
 Please feel free to manually drag and split the folds. [This table](dataset_preprocessing/fold_split.csv) descibes how the fold split in DiaTrend and T1DEXI.
 ### 2. Run the Models
