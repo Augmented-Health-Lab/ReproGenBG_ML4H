@@ -1,0 +1,28 @@
+dataset:
+  csv_path: ../../../datasets/t1dexi_subset/11.csv
+  nb_past_steps: 6
+  param_nb_future_steps:
+  - 6
+  scale: 0.01
+  script_path: ../../datasets/t1dexi.py
+  test_fraction: 1.0
+  train_fraction: 0.0
+  valid_fraction: 0.0
+loss_function:
+  script_path: ../../loss_functions/mse_keras.py
+model:
+  activation_function: relu
+  nb_lstm_states: 32
+  script_path: ../../models/lstm_experiment_keras_vanDoorn.py
+optimizer:
+  learning_rate: 0.0001
+  script_path: ../../optimizers/adam_keras.py
+train:
+  artifacts_path: ../../artifacts/vandoorn_t1dexi_experiment_6sh/
+  batch_size: 1024
+  epochs: 10000
+  param_seed:
+  - 20
+  patience: 100
+  script_path: ../../train/train_keras.py
+  shuffle: true
