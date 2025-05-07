@@ -1,3 +1,4 @@
 .DS_Store
-myvenv
+myenv/
+myenv39/
 check_version.py
