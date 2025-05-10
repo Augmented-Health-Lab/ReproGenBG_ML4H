@@ -1,0 +1,28 @@
+dataset:
+  csv_path: C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/processed_cgm_data_Subject3.csv
+  nb_past_steps: 12
+  param_nb_future_steps:
+  - 6
+  scale: 0.01
+  script_path: ../../datasets/diatrend.py
+  test_fraction: 1.0
+  train_fraction: 0.0
+  valid_fraction: 0.0
+loss_function:
+  script_path: ../../Original_Martinsson/loss_functions/nll_keras.py
+model:
+  activation_function: exp
+  nb_lstm_states: 256
+  script_path: ../../Original_Martinsson/models/lstm_experiment_keras.py
+optimizer:
+  learning_rate: 0.001
+  script_path: ../../Original_Martinsson/optimizers/adam_keras.py
+train:
+  artifacts_path: ../../artifacts/martinsson_diatrend_experiment_12sh/
+  batch_size: 1024
+  epochs: 10000
+  param_seed:
+  - 20
+  patience: 200
+  script_path: ../../Original_Martinsson/train/train_keras.py
+  shuffle: true

@@ -14,6 +14,6 @@ if [ $1 -lt 1 ] || [ $1 -gt 5 ]; then
 fi
 
 # Run the Python script with the provided fold number
-python vandoor_t1dexi_main.py --fold $1
+python vandoorn_t1dexi_main.py --fold $1
 
 echo "Script execution completed"

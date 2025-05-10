@@ -5,7 +5,7 @@ __pycache__/
 */__pycache__
 *.pyc
 random_search_configs/
-*.yaml
+# *.yaml
 *.png
 notebooks_deprecated/
 process_rmse_result/
