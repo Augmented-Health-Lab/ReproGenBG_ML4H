@@ -1,6 +1,6 @@
 dataset:
   script_path: ../datasets/t1dexi.py
-  csv_path: ../../datasets/t1dexi_subset/fold1_training/all
+  csv_path: C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold1_training/all
   nb_past_steps: 12
   param_nb_future_steps: [6]
   train_fraction: 0.8
@@ -17,7 +17,7 @@ optimizer:
 loss_function:
   script_path: ../Original_Martinsson/loss_functions/nll_keras.py
 train:
-  script_path: ../Original_Martinssons/train/train_keras.py
+  script_path: ../Original_Martinsson/train/train_keras.py
   artifacts_path: ../artifacts/martinsson_t1dexi_experiment_12sh/
   batch_size: 1024
   epochs: 10000

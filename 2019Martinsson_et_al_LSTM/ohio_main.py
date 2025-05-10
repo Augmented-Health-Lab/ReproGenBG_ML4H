@@ -14,7 +14,7 @@ from training_evaluation_functions import (
     # plot_target_distribution
 )
 import tensorflow as tf
-tf.config.run_functions_eagerly(True)
+tf.compat.v1.disable_eager_execution()
 
 
 def main_training(yaml_filepath, mode):
@@ -93,7 +93,6 @@ def main_training(yaml_filepath, mode):
         model.compile(
             optimizer=optimizer,
             loss=loss_function,
-            run_eagerly=True
 
         )
 
@@ -197,14 +196,6 @@ def main_evaluate(yaml_files, mode):
             if mode == 'train':
                 print("training model ...")
                 train(model, module_train, x_train, y_train, x_valid, y_valid, cfg)
-            # elif mode == 'plot_nll':
-            #     plot_nll(model, x_test, y_test, cfg)
-            # elif mode == 'plot_noise_experiment':
-            #     plot_noise_experiment(model, x_test, y_test, cfg)
-            # elif mode == 'plot_seg':
-            #     plot_seg(model, x_test, y_test, cfg)
-            # elif mode == 'plot_dist':
-            #     plot_target_distribution(y_test, cfg)
             elif mode == 'evaluate':
                 print("Evaluating model ...")
                 evaluate_ohio(model, x_test, y_test, cfg)

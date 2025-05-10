@@ -1,6 +1,6 @@
 dataset:
   script_path: ../Original_Martinsson/datasets/ohio.py
-  xml_path: /Users/baiyinglu/Desktop/AugmentedHealthLab/ReproGenBG_ML4H/datasets/OhioT1DM/both/all
+  xml_path: C:\Users\baiyi\OneDrive\Desktop\new_ReproGen_code\ReproGenBG_ML4H\datasets\OhioT1DM\both\all
   nb_past_steps: 12
   param_nb_future_steps: [6]
   train_fraction: 0.8

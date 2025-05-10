@@ -7,6 +7,8 @@ __pycache__/
 random_search_configs/
 *.yaml
 *.png
+notebooks_deprecated/
+process_rmse_result/
 !original_ohio_experiments_60min/
 !original_ohio_experiments_60min/*.yaml
 !original_diatrend_experiments_60min/

@@ -1,6 +1,6 @@
 dataset:
   script_path: ../datasets/diatrend.py
-  csv_path: ../../datasets/diatrend_subset/fold1_training/all
+  csv_path:  C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold1_training/all
   nb_past_steps: 12
   param_nb_future_steps: [6]
   train_fraction: 0.8

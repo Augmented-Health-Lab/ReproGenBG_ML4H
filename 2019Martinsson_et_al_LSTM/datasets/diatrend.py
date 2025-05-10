@@ -1,7 +1,7 @@
 # import xml.etree.ElementTree as ET
 import pandas as pd
 import numpy as np
-import utils
+from Original_Martinsson import utils
 import os
 import glob
 

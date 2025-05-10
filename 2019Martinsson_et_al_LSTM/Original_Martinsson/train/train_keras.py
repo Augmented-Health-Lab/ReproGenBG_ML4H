@@ -1,5 +1,5 @@
 import tensorflow as tf
-tf.config.run_functions_eagerly(True)
+# tf.config.run_functions_eagerly(True)
 # tf.data.experimental.enable_debug_mode()
 import os
 
