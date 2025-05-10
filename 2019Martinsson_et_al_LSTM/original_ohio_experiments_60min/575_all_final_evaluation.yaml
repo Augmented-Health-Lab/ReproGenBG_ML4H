@@ -1,6 +1,6 @@
 dataset:
   script_path: ../datasets/ohio.py
-  xml_path: C:\Users\baiyi\OneDrive\Desktop\new_ReproGen_code\ReproGenBG_ML4H\datasets\OhioT1DM\2020\test\575-ws-testing.xml
+  xml_path: C:\Users\baiyi\OneDrive\Desktop\new_ReproGen_code\ReproGenBG_ML4H\datasets\OhioT1DM\2018\test\575-ws-testing.xml
   nb_past_steps: 12
   param_nb_future_steps: [6]
   train_fraction: 0.0

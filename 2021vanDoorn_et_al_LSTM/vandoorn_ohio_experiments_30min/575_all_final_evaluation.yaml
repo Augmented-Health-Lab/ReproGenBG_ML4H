@@ -1,0 +1,26 @@
+dataset:
+  script_path: ../Original_vanDoorn/datasets/ohio.py
+  xml_path: C:\Users\baiyi\OneDrive\Desktop\new_ReproGen_code\ReproGenBG_ML4H\datasets\OhioT1DM\2018\test\575-ws-testing.xml
+  nb_past_steps: 6
+  param_nb_future_steps: [6]
+  train_fraction: 0.0
+  valid_fraction: 0.0
+  test_fraction: 1.0
+  scale: 0.01
+model:
+  script_path: ../Original_vanDoorn/models/lstm_experiment_keras_vanDoorn.py
+  nb_lstm_states: 32
+  activation_function: relu
+optimizer:
+  script_path: ../Original_vanDoorn/optimizers/adam_keras.py
+  learning_rate: 1e-4
+loss_function:
+  script_path: ../Original_vanDoorn/loss_functions/mse_keras.py
+train:
+  script_path: ../Original_vanDoorn/train/train_keras.py
+  artifacts_path: ../artifacts/vandoorn_original_experiment_6sh/
+  batch_size: 1024
+  epochs: 10000
+  patience: 100
+  shuffle: True
+  param_seed: [10,25,50]
