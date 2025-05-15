@@ -1,6 +1,6 @@
 dataset:
   script_path: ../datasets/t1dexi.py
-  csv_path: C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_diatrend_subset/fold1_training/all
+  csv_path: C:/Users/baiyi/OneDrive/Desktop/Modify_GenBG/modified_t1dexi_subset/T1DEXI_cgm_processed/fold1_training/all
   nb_past_steps: 6
   param_nb_future_steps: [6]
   train_fraction: 0.8

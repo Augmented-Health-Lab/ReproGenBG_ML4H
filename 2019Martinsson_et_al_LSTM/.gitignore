@@ -23,3 +23,5 @@ process_rmse_result/
 !vandoorn_diatrend_experiments_30min/*.yaml
 !vandoorn_t1dexi_experiments_30min/
 !vandoorn_t1dexi_experiments_30min/*.yaml
+
+requirements_before_downgrade.txt

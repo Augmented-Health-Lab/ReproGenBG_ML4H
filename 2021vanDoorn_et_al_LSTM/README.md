@@ -1,12 +1,11 @@
-# Replicate the Model Proposed by Martionsson et al., 2019
+# Replicate the Model Proposed by vanDoorn et al., 2021
 
-This replication work is based on the code from the original study's repository: https://github.com/johnmartinsson/blood-glucose-prediction. However, not all files or functions from the original repository were used in this study.
-
+This replication work referred the code from the study of Martinsson et al. 2019 repository[1]: https://github.com/johnmartinsson/blood-glucose-prediction. The data construction, model details, and other related hyper parameters were replaced according to the van Doorn et al., 2021 manuscript[2]. 
 ## Structure
 
 ```
-2019Martinsson_et_al_LSTM/
-├── Original_Martinsson/           # Original code from Martinsson et al[1].
+2021vanDoorn_et_al_LSTM/
+├── Original_vanDoorn/           # Original code transferred from ../2019Martinsson_et_al_LSTM/Original_Martinsson/.
 │   ├── datasets/
 │   │   └── ohio.py                # OhioT1DM dataset handler
 │   ├── loss_functions/           # Loss function implementations
@@ -26,19 +25,19 @@ This replication work is based on the code from the original study's repository:
 │   ├── diatrend.py             # DiaTrend dataset handler
 │   ├── ohio.py                 # OhioT1DM dataset handler
 │   └── t1dexi.py               # T1DEXI dataset handler
-├── original_diatrend_experiments_60min/  # DiaTrend configs
+├── vandoorn_diatrend_experiments_30min/  # DiaTrend configs
 │   ├── fold1_eval/             # Evaluation configs for fold 1
 │   └── all_final_experiment_fold1.yaml  # Training configs for fold 1
-├── original_ohio_experiments_60min/      # Ohio configs
+├── vandoorn_ohio_experiments_30min/      # Ohio configs
 │   ├── *_all_final_evaluation.yaml      # Subject-specific evaluations
 │   └── all_final_experiment.yaml         # Training config
-├── original_t1dexi_experiments_60min/    # T1DEXI configs
+├── vandoorn_t1dexi_experiments_30min/    # T1DEXI configs
 │   ├── fold1_eval/                      # Evaluation configs for fold 1
 │   └── all_final_experiment_fold1.yaml     # Training configs for fold 1
 ├── result_tables/              # Performance results with different sampling horizon
-├── diatrend_main.py           # DiaTrend training/evaluation script
-├── ohio_main.py               # Ohio training/evaluation script
-├── t1dexi_main.py            # T1DEXI training/evaluation script
+├── vandoorn_diatrend_main.py           # DiaTrend training/evaluation script
+├── vandoorn_ohio_main.py               # Ohio training/evaluation script
+├── vandoorn_t1dexi_main.py            # T1DEXI training/evaluation script
 ├── training_evaluation_functions.py  # Core training functions
 ├── generate_new_yaml.ipynb         # Notebook to generate new yaml config files
 ├── run_diatrend.sh           # DiaTrend execution script
@@ -55,7 +54,7 @@ vandoorn_diatrend_experiments_30min
 vandoorn_ohio_experiments_30min
 vandoorn_t1dexi_experiments_30min
 ```
-Please ensure that the ```csv_path``` and ```xml_path``` parameters within each YAML file are updated with the correct absolute paths before running the execution code below.
+Please ensure that the ```csv_path``` and ```xml_path``` parameters within each YAML file are updated with the correct **absolute paths** before running the execution code below.
 
 ### OhioT1DM
 ```bash
@@ -80,3 +79,4 @@ Similar with the DiaTrend code, this repository also only provides the training 
 
 ## Reference
 - [1] Martinsson, J., Schliep, A., Eliasson, B. et al. Blood Glucose Prediction with Variance Estimation Using Recurrent Neural Networks. J Healthc Inform Res 4, 1–18 (2020). https://doi.org/10.1007/s41666-019-00059-y. Open-source code: https://github.com/johnmartinsson/blood-glucose-prediction 
+- [2] van Doorn WPTM, Foreman YD, Schaper NC, Savelberg HHCM, Koster A, et al. (2021) Machine learning-based glucose prediction with use of continuous glucose and physical activity monitoring data: The Maastricht Study. PLOS ONE 16(6): e0253125. https://doi.org/10.1371/journal.pone.0253125
