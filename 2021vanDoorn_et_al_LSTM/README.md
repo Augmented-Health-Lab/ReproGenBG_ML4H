@@ -79,4 +79,4 @@ Similar with the DiaTrend code, this repository also only provides the training 
 
 ## Reference
 - [1] Martinsson, J., Schliep, A., Eliasson, B. et al. Blood Glucose Prediction with Variance Estimation Using Recurrent Neural Networks. J Healthc Inform Res 4, 1–18 (2020). https://doi.org/10.1007/s41666-019-00059-y. Open-source code: https://github.com/johnmartinsson/blood-glucose-prediction 
-- [2] van Doorn WPTM, Foreman YD, Schaper NC, Savelberg HHCM, Koster A, et al. (2021) Machine learning-based glucose prediction with use of continuous glucose and physical activity monitoring data: The Maastricht Study. PLOS ONE 16(6): e0253125. https://doi.org/10.1371/journal.pone.0253125
+- [2] 
