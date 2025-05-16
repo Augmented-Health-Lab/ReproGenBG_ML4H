@@ -1,4 +1,0 @@
-Test File: 1043
-RMSE: 19.04
-MAE: 12.96
-MAPE: 9.71%

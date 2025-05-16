@@ -1,4 +1,0 @@
-Test File: 1201
-RMSE: 20.31
-MAE: 14.35
-MAPE: 11.81%

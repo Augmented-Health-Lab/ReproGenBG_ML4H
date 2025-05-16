@@ -1,4 +1,0 @@
-Test File: 17
-RMSE: 30.15
-MAE: 22.21
-MAPE: 9.92%

@@ -1,4 +1,0 @@
-Test File: 1336
-RMSE: 24.87
-MAE: 17.62
-MAPE: 13.93%

@@ -1,4 +1,0 @@
-Test File: 1121
-RMSE: 24.04
-MAE: 17.91
-MAPE: 16.09%

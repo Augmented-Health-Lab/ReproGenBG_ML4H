@@ -1,4 +1,0 @@
-Test File: 1082
-RMSE: 17.34
-MAE: 13.04
-MAPE: 12.44%

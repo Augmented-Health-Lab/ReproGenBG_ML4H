@@ -1,4 +1,0 @@
-Test File: population'
-RMSE: 35.73
-MAE: 21.72
-MAPE: 15.94%

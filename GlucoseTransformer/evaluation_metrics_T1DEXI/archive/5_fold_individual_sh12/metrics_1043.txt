@@ -1,4 +1,0 @@
-Test File: 1043
-RMSE: 18.79
-MAE: 12.85
-MAPE: 9.69%

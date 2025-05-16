@@ -1,4 +1,0 @@
-Test File: 1010
-RMSE: 22.33
-MAE: 15.35
-MAPE: 14.23%

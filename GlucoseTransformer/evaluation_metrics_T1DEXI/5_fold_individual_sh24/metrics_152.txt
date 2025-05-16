@@ -1,4 +1,0 @@
-Test File: 152
-RMSE: 24.18
-MAE: 17.04
-MAPE: 13.60%

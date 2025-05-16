@@ -1,4 +1,0 @@
-Test File: 1194
-RMSE: 15.08
-MAE: 11.04
-MAPE: 8.82%

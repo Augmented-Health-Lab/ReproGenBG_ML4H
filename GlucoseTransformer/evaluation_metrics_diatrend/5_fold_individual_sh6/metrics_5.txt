@@ -1,4 +1,0 @@
-Test File: 5
-RMSE: 19.38
-MAE: 14.47
-MAPE: 9.39%
