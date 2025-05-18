@@ -2,7 +2,9 @@ import pandas as pd
 import os
 import shutil
 
-
+# The fold split functions are specificly applied to the following three methods: 
+# Martinsson et al. , vanDoorn et al. and Deng et al. 
+# Lee et al, Li et al, and Rabby et al. have their fold split functions in their own respective files.
 def process_patient_cgm(cgm_df, min_days=28, max_days=42, records_threshold=200, min_records=200, max_records=288):
     """
     Process patient CGM data based on the number of valid recording days.
