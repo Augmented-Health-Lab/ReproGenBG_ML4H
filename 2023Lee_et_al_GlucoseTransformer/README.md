@@ -1,4 +1,4 @@
-# Replicate the Model Proposed by Deng et al., 2021
+# Replicate the Model Proposed by Lee et al., 2023
 
 The replication work followed the paper: S. -M. Lee, D. -Y. Kim and J. Woo, "Glucose Transformer: Forecasting Glucose Level and Events of Hyperglycemia and Hypoglycemia," in IEEE Journal of Biomedical and Health Informatics, vol. 27, no. 3, pp. 1600-1611, March 2023, doi: 10.1109/JBHI.2023.3236822.
 
@@ -44,3 +44,7 @@ chmod +x run_t1dexi.sh
 ## Note
 
 The fold split function is inherently inserted into the preprocessing code. So the fold number doesn't need to be specified when executing the code for this method. 
+
+## Reference
+
+[1] S. -M. Lee, D. -Y. Kim and J. Woo, "Glucose Transformer: Forecasting Glucose Level and Events of Hyperglycemia and Hypoglycemia," in IEEE Journal of Biomedical and Health Informatics, vol. 27, no. 3, pp. 1600-1611, March 2023, doi: 10.1109/JBHI.2023.3236822.

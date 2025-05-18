@@ -15,21 +15,19 @@ We reviewed 60 peer-reviewed papers published between 2018 and 2025 that introdu
 
 ## 📂 Repository Structure
 The repository is organized as follows:
-
-- `AccurateBG/` – The implementation of Deng et al.
+- `2019Martinsson_et_al_LSTM/` – The implementation of Martinsson et al., 2019
+- `2020Li_et_al_GluNet/` – The implementation of Li et al., 2021
+- `2021Deng_et_al_CNN/` – The implementation of Deng et al., 2021
+- `2021Rabby_et_al_StackedLSTM/` – The implementation of Rabby et al., 2021
+- `2021vanDoorn_et_al_LSTM/` - The implementation of vanDoorn et al., 2021
+- `2023Lee_et_al_GlucoseTransformer/` – The implementation of Lee et al., 2023
 - `Baseline/` – The implementation of baseline method. 
-- `dataset_preprocessing/` - Includes data preprocesssing script, subset patient id, and fold split. 
-- `GlucoseTransformer/` – The first version implementation of Lee et al. Deprecated.
-- `GlucoseTransformer_organized/` – The implementation of Lee et al.
-- `Li_et_al_GluNet/` – The implementation of Li et al.
-- `Literature_review_summary/` - Summarize from the lierature
-- `Martinsson/` – The implementation of Martinsson et al. 
-- `Rabby_et_al_StackedLSTM/` – The implementation of Rabby et al.
-- `vanDoorn/` - The implementation of vanDoorn et al.
-- `requirements.txt` – Python package dependencies
-- `README.md` – Project overview and instructions (you are here)
-
-
+- `dataset_preprocessing/` - Includes data preprocesssing script, subset patient id, and fold split (For Method Martinsson et al, vanDoorn et al, and Deng et al). 
+- `Literature_review_summary/` - Summarize from the lierature and code for Figure 1.
+- `ResultFigures/` - Scripts for the Figure 2-5 in the paper.
+- `License`
+- `README.md`
+- `requirement.txt`
 ---
 
 ## 📋 Requirements
@@ -68,119 +66,23 @@ Please feel free to manually drag and split the folds. [This table](dataset_prep
 
 Each dataset has a dedicated main script to train and evaluate all six methods. And the parameters are all based on the version provided by the original studies. 
 
-#### 2.1 Martinsson et al., 2019 [1]
-Before you run the command, please ensure to change the data path in config yaml file 
-##### OhioT1DM:
+#### Martinsson et al., 2019 [1]
+Please refer this [README.md](./2019Martinsson_et_al_LSTM/README.md) for replication details. 
 
-```bash
-python ./Martinsson/ohio_main.py
-```
-##### DiaTrend:
+#### Li et al., 2020 [2]
+Please refer this [README.md](./2020Li_et_al_GluNet/README.md) for replication details. 
 
-```bash
-python ./Martinsson/diatrend_main.py
-```
+#### van Doorn et al., 2021 [3]
+Please refer this [README.md](./2021vanDoorn_et_al_LSTM/README.md) for replication details. 
 
-##### T1DEXI:
+#### Deng et al., 2021 [4]
+Please refer this [README.md](./2021Deng_et_al_CNN/README.md) for replication details.
 
-```bash
-python ./Martinsson/t1dexi_main.py
-```
+#### Rabby et al., 2021 [5]
+Please refer this [README.md](./2021Rabby_et_al_StackedLSTM/README.md) for replication details.
 
-#### 2.2 Li et al., 2021 [2]
-##### OhioT1DM:
-
-```bash
-python ./Li_et_al_GluNet/Ohio_Processing_LSTM.py 
-bash ./Li_et_al_GluNet/ohio_job.sh
-```
-##### DiaTrend:
-
-```bash
-bash ./Li_et_al_GluNet/diatrend_job.sh
-```
-
-##### T1DEXI:
-
-```bash
-bash ./Li_et_al_GluNet/t1dexi_job.sh
-```
-
-#### 2.3 van Doorn et al., 2021 [3]
-##### OhioT1DM:
-
-```bash
-python ./vanDoorn/vandoorn_ohio_main.py
-```
-##### DiaTrend:
-
-```bash
-python ./vanDoorn/vandoorn_diatrend_main.py
-```
-
-##### T1DEXI:
-
-```bash
-python ./vanDoorn/vandoorn_t1dexi_main.py
-```
-
-
-#### 2.4 Deng et al., 2021
-##### OhioT1DM:
-
-```bash
-python ./AccurateBG/accurate_bg/new_ohio_main.py
-```
-##### DiaTrend:
-
-```bash
-python ./AccurateBG/accurate_bg/diatrend_main.py
-```
-
-##### T1DEXI:
-
-```bash
-python ../AccurateBG/accurate_bg/t1dexi_main.py
-```
-
-#### 2.5 Rabby et al., 2021
-##### OhioT1DM:
-```bash
-python ./Rabby_et_al_StackedLSTM/src/Ohio_Processing_LSTM.py 
-bash ./Rabby_et_al_StackedLSTM/src/ohio_job.sh 
-```
-##### DiaTrend:
-
-```bash
-bash ./Rabby_et_al_StackedLSTM/src/diatrend_job.sh 
-```
-
-##### T1DEXI:
-
-```bash
-bash ../AccurateBG/accurate_bg/t1dexi_main.py
-```
-
-
-
-#### 2.6 Lee et al., 2021
-##### OhioT1DM:
-
-```bash
-python ./GlucoseTransformer_organized/ohio_main.py
-```
-##### DiaTrend:
-
-```bash
-python ./GlucoseTransformer_organized/diatrend_main.py
-```
-
-##### T1DEXI:
-
-```bash
-python ../GlucoseTransformer_organized/t1dexi_main.py
-```
-
+#### Lee et al., 2021 [6]
+Please refer this [README.md](./2023Lee_et_al_GlucoseTransformer/README.md) for replication details.
 
 ## 📚 References
 
