@@ -44,7 +44,7 @@ pip install -r requirements.txt
 
 ## 🚀 How to Run
 
-### 1. Prepare the Dataset
+### 1. Dataset
 
 Please refer to the data preparation instructions for each dataset below.  
 **Note:** Due to licensing restrictions, raw datasets are not included in this repository.
@@ -53,16 +53,18 @@ Please refer to the data preparation instructions for each dataset below.
 - **DiaTrend**: Request access thru Synapse: https://www.synapse.org/Synapse:syn38187184/wiki/619490. 
 - **T1DEXI**: Apply for access Vivli: https://search.vivli.org/doiLanding/studies/PR00008428/isLanding.
 
+### 2. Data preprocessing
 After accessing these three datasets, please follow these instructions for data sanitation:
 
 Create a folder on the same level with the pulled "ReproGenBG_ML4H" folder. Name it as "datasets"
 
 - **OhioT1DM**: Please directly put the dataset folder into this directory: `../datasets/[OhioT1DM]`. Also copy all the xml files from folder 2018 and 2020 to another folder "both" in the same folder as 2018 and 2020. 
-- **DiaTrend**: Please following [this script](dataset_preprocessing/diatrend_preprocessing.py) for data preprocessing. And please put the generated `../datasets/diatrend_subset/fold[N]_training` and `../datasets/diatrend_subset/processed_cgm_data_Subject[N].csv`. 
-- **T1DEXI**: Please following this [subset list](dataset_preprocessing/selected_t1dexi.txt) and [python file](dataset_preprocessing/t1dexi_preprocessing.py) for data preprocessing. And please put the generated `../datasets/t1dexi_subset/fold[N]_training` and `../datasets/t1dexi_subset/[N].csv`
+- **DiaTrend**: Please following [README.md](./dataset_preprocessing/README,md) for data preprocessing. And please put the generated `fold[N]_training`, `fold[N]_test` and `processed_cgm_data_Subject[N].csv` under the same directory. 
+- **T1DEXI**: Please following this [subset list](./dataset_preprocessing/selected_t1dexi.txt) and [README.md](./dataset_preprocessing/README.md) for data preprocessing. And please put the generated `fold[N]_training`, `fold[N]_test` and `[N].csv` under the same directory. 
 
 Please feel free to manually drag and split the folds. [This table](dataset_preprocessing/fold_split.csv) descibes how the fold split in DiaTrend and T1DEXI.
-### 2. Run the Models
+
+### 3. Run the Models
 
 Each dataset has a dedicated main script to train and evaluate all six methods. And the parameters are all based on the version provided by the original studies. 
 

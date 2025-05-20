@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import shutil
+import argparse
 
 # The fold split functions are specificly applied to the following three methods: 
 # Martinsson et al. , vanDoorn et al. and Deng et al. 
@@ -84,37 +85,49 @@ def analyze_patient_data(cgm_df):
         return None
     
 
-# Read the xlsx file
-def extract_diatrend_cgm(filename):
+def extract_diatrend_cgm(input_dir, output_dir, filename):
     """
-    Analyze and display information about the processing results
-    """
-    cgm_df = pd.read_excel(f"../diatrend_dataset/{filename}", sheet_name="CGM")
-
-    processed_df = analyze_patient_data(cgm_df)
-    cleaned_df = processed_df[['date', 'mg/dl']].copy()
-
-    # Sort by date to ensure chronological order
-    cleaned_df = cleaned_df.sort_values('date')
-
-    # Reset index
-    cleaned_df = cleaned_df.reset_index(drop=True)
-
-    # Save to CSV
-    output_path = f"../datasets/diatrend_subset/processed_cgm_data_{filename[:-5]}.csv"
-    cleaned_df.to_csv(output_path, index=False)
-
-def main():
-    all_diatrend_subjects = f"../diatrend_dataset" # Path to the directory containing all Diatrend subjects you received
-    all_diatrend_subjects_filename = [f for f in os.listdir(all_diatrend_subjects) if os.path.isfile(os.path.join(all_diatrend_subjects, f))]
-
-    for filename in all_diatrend_subjects_filename:
-        extract_diatrend_cgm(filename)
+    Process and extract CGM data from Excel files
     
-    # Example usage
-    input_directory = "../datasets/diatrend_subset"
-    output_directory = "../datasets/diatrend_subset/folds"
-    split_into_folds(input_directory, output_directory)
+    Args:
+        input_dir (str): Directory containing raw Diatrend dataset
+        output_dir (str): Directory for processed output files
+        filename (str): Name of the Excel file to process
+    """
+    cgm_df = pd.read_excel(os.path.join(input_dir, filename), sheet_name="CGM")
+    processed_df = analyze_patient_data(cgm_df)
+    
+    if processed_df is not None:
+        cleaned_df = processed_df[['date', 'mg/dl']].copy()
+        cleaned_df = cleaned_df.sort_values('date')
+        cleaned_df = cleaned_df.reset_index(drop=True)
+
+        # Create output directory if it doesn't exist
+        os.makedirs(output_dir, exist_ok=True)
+        
+        output_path = os.path.join(output_dir, f"processed_cgm_data_{filename[:-5]}.csv")
+        cleaned_df.to_csv(output_path, index=False)
+        print(f"Processed data saved to: {output_path}")
+
+def main(input_dir, output_dir):
+    """
+    Main function to process Diatrend dataset
+    
+    Args:
+        input_dir (str): Directory containing raw Diatrend files
+        output_dir (str): Directory for processed output
+    """
+    # Process all Excel files
+    all_diatrend_subjects_filename = [f for f in os.listdir(input_dir) 
+                                    if f.endswith('.xlsx') and os.path.isfile(os.path.join(input_dir, f))]
+    
+    for filename in all_diatrend_subjects_filename:
+        print(f"\nProcessing {filename}...")
+        extract_diatrend_cgm(input_dir, output_dir, filename)
+    
+    # Split into folds
+    folds_dir = os.path.join(output_dir, "folds")
+    split_into_folds(output_dir, folds_dir)
 
 def split_into_folds(input_dir, output_dir, fold_size=11, total_folds=5):
     """
@@ -155,4 +168,20 @@ def split_into_folds(input_dir, output_dir, fold_size=11, total_folds=5):
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Process Diatrend dataset and create fold splits')
+    parser.add_argument('--input_dir', type=str, required=True,
+                      help='Directory containing raw Diatrend dataset')
+    parser.add_argument('--output_dir', type=str, required=True,
+                      help='Directory for processed output files')
+    
+    args = parser.parse_args()
+    
+    # Verify directories
+    if not os.path.exists(args.input_dir):
+        raise FileNotFoundError(f"Input directory not found: {args.input_dir}")
+    
+    print(f"Processing Diatrend dataset...")
+    print(f"Input directory: {args.input_dir}")
+    print(f"Output directory: {args.output_dir}")
+    
+    main(args.input_dir, args.output_dir)
