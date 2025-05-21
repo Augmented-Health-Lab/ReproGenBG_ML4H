@@ -47,11 +47,11 @@ pip install -r requirements.txt
 ### 1. Dataset
 
 Please refer to the data preparation instructions for each dataset below.  
-**Note:** Due to licensing restrictions, raw datasets are not included in this repository.
+**Note:** Due to licensing restrictions and data use agreements, raw datasets are not included in this repository. However, all datasets used in this study are publicly available and can be requested by interested researchers. 
 
-- **OhioT1DM**: Request the access to the dataset: https://webpages.charlotte.edu/rbunescu/data/ohiot1dm/OhioT1DM-dataset.html
-- **DiaTrend**: Request access thru Synapse: https://www.synapse.org/Synapse:syn38187184/wiki/619490. 
-- **T1DEXI**: Apply for access Vivli: https://search.vivli.org/doiLanding/studies/PR00008428/isLanding.
+- **OhioT1DM**: Request access to the OhioT1DM dataset through this link: https://webpages.charlotte.edu/rbunescu/data/ohiot1dm/OhioT1DM-dataset.html
+- **DiaTrend**: Request access to the DiaTrend dataset through this link: [https://www.synapse.org/Synapse:syn38187184/wiki/619490](https://doi.org/10.7303/syn38187184). 
+- **T1DEXI**: Request access to the T1DEXI dataset through this link: [https://search.vivli.org/doiLanding/studies/PR00008428/isLanding](https://doi.org/10.25934/PR00008428).
 
 ### 2. Data preprocessing
 After accessing these three datasets, please follow these instructions for data sanitation:
