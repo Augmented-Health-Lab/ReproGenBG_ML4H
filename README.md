@@ -56,7 +56,7 @@ Please refer to the data preparation instructions for each dataset below.
 ### 2. Data preprocessing
 After accessing these three datasets, please follow these instructions for data sanitation:
 
-Create a folder on the same level with the pulled "ReproGenBG_ML4H" folder. Name it as "datasets"
+Create a folder on the same level with the pulled "ReproducibilityStudy_DL_BGPrediction" folder. Name it as "datasets"
 
 - **OhioT1DM**: Please directly put the dataset folder into this directory: `../datasets/[OhioT1DM]`. Also copy all the xml files from folder 2018 and 2020 to another folder "both" in the same folder as 2018 and 2020. 
 - **DiaTrend**: Please following [README.md](./dataset_preprocessing/README,md) for data preprocessing. And please put the generated `fold[N]_training`, `fold[N]_test` and `processed_cgm_data_Subject[N].csv` under the same directory. 

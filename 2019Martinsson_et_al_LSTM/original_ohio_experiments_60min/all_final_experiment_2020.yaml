@@ -1,6 +1,6 @@
 dataset:
   script_path: ../datasets/ohio.py
-  xml_path: C:\Users\baiyi\OneDrive\Desktop\new_ReproGen_code\ReproGenBG_ML4H\datasets\OhioT1DM\2020\train\all
+  xml_path: C:\Users\baiyi\OneDrive\Desktop\new_ReproGen_code\ReproducibilityStudy_DL_BGPrediction\datasets\OhioT1DM\2020\train\all
   nb_past_steps: 12
   param_nb_future_steps: [6]
   train_fraction: 0.8
