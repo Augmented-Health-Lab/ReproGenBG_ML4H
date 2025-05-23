@@ -1,7 +1,7 @@
-# Deep Learning for Blood Glucose Prediction: Investigating Reproducibility and Factors Affecting Differential Performance
+# Deep Learning for Blood Glucose Prediction: Investigating Reproducibility
 
 This repository contains the implementation and replication code for our study:  
-**"Deep Learning for Blood Glucose Prediction: Investigating Reproducibility, Bias, and Factors Affecting Differential Performance."**
+**"Deep Learning for Blood Glucose Prediction: Investigating Reproducibility and Factors Affecting Differential Performance."**
 
 ## Abstract: 
 (Place holder for abstract)
