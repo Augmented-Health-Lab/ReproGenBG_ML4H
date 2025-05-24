@@ -80,5 +80,5 @@ Link to the original paper: https://ieeexplore.ieee.org/document/8779644
 Citation to the original paper: 
 
 ```
-Rabby, M.F., Tu, Y., Hossen, M.I. et al. Stacked LSTM based deep recurrent neural network with kalman smoothing for blood glucose prediction. BMC Med Inform Decis Mak 21, 101 (2021). https://doi.org/10.1186/s12911-021-01462-5
+K. Li, C. Liu, T. Zhu, P. Herrero and P. Georgiou, "GluNet: A Deep Learning Framework for Accurate Glucose Forecasting," in IEEE Journal of Biomedical and Health Informatics, vol. 24, no. 2, pp. 414-423, Feb. 2020, doi: 10.1109/JBHI.2019.2931842.
 ```
