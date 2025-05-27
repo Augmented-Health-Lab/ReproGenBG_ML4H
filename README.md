@@ -1,10 +1,10 @@
 # Deep Learning for Blood Glucose Prediction: Investigating Reproducibility
 
-This repository contains the implementation and replication code for our study:  
+This repository contains the associated supplementary material and implementation/replication code for the paper:  
 **"Deep Learning for Blood Glucose Prediction: Investigating Reproducibility and Factors Affecting Differential Performance."**
 
 ## Abstract: 
-(Place holder for abstract)
+Blood glucose prediction is a fundamental part of advanced technology that promises to improve diabetes outcomes. However, a critical gap exists around understanding the reproducibility of state-of-the-art methods for blood glucose prediction. To bridge this gap, we evaluated 60 DL-based glucose prediction papers (2018–2025) and assess them against seven reproducibility criteria. We found that code availability and use of multiple datasets are among the top reproducibility gaps in the field. Additionally, we reimplemented and assessed six representative models using three publicly available datasets: OhioT1DM, DiaTrend, and T1DEXI. Our results show good reproducibility of DL methods when using the same code (where available) and same evaluation dataset. However, we found poor conceptual reproducibility across datasets with significantly different diabetes management. Further analyses revealed that the accuracy of blood glucose prediction methods was significantly associated with individual diabetes management and sex/gender. All models evaluated had higher prediction errors for individuals with comparatively worse glycemic control and for female subgroups compared to males.
 
 
 ## Literature review summary
@@ -14,7 +14,9 @@ We reviewed 60 peer-reviewed papers published between 2018 and 2025 that introdu
 ---
 
 ## 📂 Repository Structure
-The repository is organized as follows:
+In this study, we evaluated 60 DL-based glucose prediction papers (2018–2025) and assess them against core reproducibility criteria. Furthermore, we reimplemented and assessed six representative deep learning models using three publicly available datasets: OhioT1DM, DiaTrend, and T1DEXI. 
+
+As a result, this repository contains the following:
 - `2019Martinsson_et_al_LSTM/` – The implementation of Martinsson et al., 2019
 - `2020Li_et_al_GluNet/` – The implementation of Li et al., 2021
 - `2021Deng_et_al_CNN/` – The implementation of Deng et al., 2021
